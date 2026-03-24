@@ -1,0 +1,37 @@
+{
+    "version": "1.0",
+    "title": "Techtoby Corp",
+    "description": "A collection of apps for Bloxburg builders, designed by dummtoby.",
+    "links": {
+        "youtube": "https://www.youtube.com/@dummtoby"
+    },
+    "apps": [
+        {
+            "name": "bbcomputer",
+            "long_name": "Bloxburg Computer Decal Designer",
+            "version": "1.0",
+            "description": "Design nice computer desktop decals for your Bloxburg builds!",
+            "author": "dummtoby",
+            "path": "bbcomputer/",
+            "icon": "media/100003.png"
+        },
+        {
+            "name": "bbfamtree",
+            "long_name": "Bloxburg Family Tree Generator",
+            "version": "1.0",
+            "description": "Generate a family tree for your Bloxburg builds!",
+            "author": "dummtoby",
+            "path": "bbfamtree/",
+            "icon": "https://cdn.shawnyxx.dev/assets/655910.png"
+        },
+        {
+            "name": "bbmural",
+            "long_name": "Bloxburg Mural Generator",
+            "version": "1.0",
+            "description": "Generate a mural for your Bloxburg builds!",
+            "author": "dummtoby",
+            "path": "bbmural/",
+            "icon": "https://cdn.shawnyxx.dev/icons/158450.png"
+        }
+    ]
+}
