@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<!-- saved from url=(0051)https://cdn.ecxogames.ca/ecxogames/apps/192840.html -->
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bloxburg Family Tree Generator</title>
+  <link rel="shortcut icon" href="https://cdn.shawnyxx.dev/assets/655910.png" type="image/png">
+
+
+  <style>
+    .socrate-page {
+      width: 100%;
+      height: 100%;
+    }
+
+    .socrate-page.show {
+      display: block !important;
+    }
+  </style>
+
+
+  <style>
+    body,
+    html {
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+    }
+
+    * {
+      font-family: Roboto;
+    }
+  </style>
+
+
+  <style>
+    .FamilyTreePage {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+      background: #DCDCDC;
+      user-select: none;
+    }
+
+    #display_name,
+    #description,
+    #age {
+      color: black !important;
+    }
+
+    .TreeBackground {
+      position: fixed;
+      bottom: 0;
+      height: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      object-fit: contain;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .FamilyTreeContainer {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      transform-origin: top left;
+    }
+
+    .gridOverlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 200vw;
+      height: 200vh;
+      z-index: 15;
+      opacity: 0;
+      transition: opacity 0.25s ease-out;
+      /* Modern dot grid pattern */
+      background-image:
+        radial-gradient(circle, rgba(99, 102, 241, 0.4) 1.5px, transparent 1.5px),
+        radial-gradient(circle, rgba(99, 102, 241, 0.15) 1px, transparent 1px);
+      background-size: 20px 20px, 100px 100px;
+      background-position: 0 0, 0 0;
+      pointer-events: none;
+      will-change: opacity;
+    }
+
+    /* Top Buttons */
+    .TopButtons {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      z-index: 5;
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+    }
+
+    .GTextBtn {
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: black;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1),
+        inset 0 1px 1px rgba(255, 255, 255, 0.6);
+      white-space: nowrap;
+    }
+
+    .GTextBtn:hover {
+      transform: scale(1.05);
+      background: rgba(255, 255, 255, 0.35);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15),
+        inset 0 1px 1px rgba(255, 255, 255, 0.8);
+    }
+
+    /* Selection Box */
+    .SelectionBox {
+      position: fixed;
+      border: 2px solid rgba(59, 130, 246, 0.8);
+      background: rgba(59, 130, 246, 0.15);
+      pointer-events: none;
+      z-index: 50;
+      display: none;
+      border-radius: 2px;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Person Cards base */
+    .PersonCard {
+      position: absolute;
+      width: 400px;
+      padding: 6px;
+      cursor: grab;
+      user-select: none;
+      display: flex;
+      z-index: 10;
+      will-change: transform, left, top;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      transform: translateZ(0);
+    }
+
+    .PersonCard.snapping {
+      transition: left 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+        top 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+        transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+        background 0.2s ease,
+        backdrop-filter 0.2s ease,
+        box-shadow 0.2s ease,
+        border 0.2s ease;
+    }
+
+    .PersonCard.dragging {
+      transition: transform 0.08s ease-out, background 0.15s ease, backdrop-filter 0.15s ease, box-shadow 0.15s ease, border 0.15s ease;
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12),
+        0 0 30px rgba(255, 255, 255, 0.25),
+        inset 0 1px 1px rgba(255, 255, 255, 0.4);
+      z-index: 100;
+    }
+
+    .PersonCard:active {
+      cursor: grabbing;
+    }
+
+    .PersonCard.selected {
+      outline: 3px solid rgba(99, 102, 241, 0.8);
+      outline-offset: 2px;
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .PersonCard.selected.dragging {
+      outline: 3px solid rgba(99, 102, 241, 0.9);
+    }
+
+    .PersonImageWrapper {
+      width: 200px;
+      aspect-ratio: 1 / 1;
+      border: 5px solid #393939;
+      background: none;
+      position: relative;
+    }
+
+    .PersonImageWrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .PersonUsername {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      background: #0008;
+      color: white;
+    }
+
+    .PersonUsername * {
+      margin: 6px;
+    }
+
+    /* Info block */
+    .PersonCardInformationWrapper {
+      display: flex;
+      flex-direction: column;
+      margin: 4px 6px;
+      width: 100%;
+    }
+
+    .PersonName {
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .PersonDescription {
+      font-size: 12px;
+    }
+
+    .PersonAge {
+      font-size: 12px;
+    }
+
+    /* Mirrored layouts */
+    .SideLeft {
+      flex-direction: row-reverse;
+      text-align: right;
+    }
+
+    .SideRight {
+      flex-direction: row;
+      text-align: left;
+    }
+
+    /* Context Menu */
+    .ContextMenu {
+      position: absolute;
+      display: none;
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 12px;
+      z-index: 200;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12),
+        inset 0 1px 1px rgba(255, 255, 255, 0.6);
+      overflow: hidden;
+      padding: 4px;
+    }
+
+    .ContextMenu button {
+      display: block;
+      width: 150px;
+      padding: 10px 12px;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.15s ease;
+    }
+
+    .ContextMenu button:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Add member panel */
+    .AddPersonPanel {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      width: fit-content;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 16px;
+      gap: 8px;
+      border-radius: 16px;
+      z-index: 3;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1),
+        inset 0 1px 1px rgba(255, 255, 255, 0.6);
+    }
+
+    .AddPersonPanel label {
+      font-weight: 600;
+      font-size: 12px;
+      margin-top: 4px;
+      align-self: flex-start;
+      color: rgba(0, 0, 0, 0.7);
+    }
+
+    .AddPersonPanel input,
+    .AddPersonPanel textarea {
+      width: 200px;
+      background: rgba(255, 255, 255, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 8px;
+      backdrop-filter: blur(4px);
+      transition: background 0.2s ease, border 0.2s ease;
+    }
+
+    .inputWithButton {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .inputWithButton input {
+      flex: 1;
+    }
+
+    .ShowHowBtn {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      width: fit-content !important;
+      height: fit-content !important;
+      backdrop-filter: none !important;
+      color: blue !important;
+      transform: translateY(-50%);
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      position: absolute;
+      right: 2px;
+      top: 50%;
+      transition: scale 0.3s ease;
+    }
+
+    .ShowHowBtn:hover {
+      scale: 1.05;
+      text-decoration: underline;
+    }
+
+    .AddPersonPanel input:focus,
+    .AddPersonPanel textarea:focus {
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+    }
+
+    #add_person_btn {
+      width: 100%;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      margin-top: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    #add_person_btn:hover {
+      background: rgba(0, 0, 0, 0.75);
+      transform: translateY(-1px);
+    }
+
+    input,
+    textarea {
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: black;
+      outline: none;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      resize: vertical;
+      transition: background 0.2s ease, border 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input:focus,
+    textarea:focus {
+      background: rgba(255, 255, 255, 0.4);
+      border: 1px solid rgba(0, 0, 0, 0.25);
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .BoldText {
+      font-weight: 900;
+    }
+
+    /* Modal */
+    .Modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .Modal.show {
+      display: flex;
+      opacity: 1;
+    }
+
+    .ModalContent {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15),
+        inset 0 1px 1px rgba(255, 255, 255, 0.6);
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow: hidden;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+
+    .Modal.show .ModalContent {
+      transform: scale(1);
+    }
+
+    .ModalHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .ModalHeader h3 {
+      margin: 0;
+      color: rgba(0, 0, 0, 0.8);
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .CloseModalBtn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: rgba(0, 0, 0, 0.6);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 50%;
+      transition: background 0.2s ease, color 0.2s ease;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .CloseModalBtn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      color: rgba(0, 0, 0, 0.8);
+    }
+
+    .ModalBody {
+      padding: 24px;
+    }
+
+    .TutorialVideo {
+      width: 100%;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .ConfirmBtn {
+      width: 100%;
+      padding: 10px;
+      background: rgba(37, 99, 235, 0.8);
+      backdrop-filter: blur(8px);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .ConfirmBtn:hover {
+      background: rgba(37, 99, 235, 1);
+      transform: translateY(-1px);
+    }
+
+    #cancel_edit_btn {
+      width: 100%;
+      padding: 10px;
+      background: rgba(220, 38, 38, 0.6);
+      backdrop-filter: blur(8px);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      margin-top: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    #cancel_edit_btn:hover {
+      background: rgba(220, 38, 38, 0.85);
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="page-main" class="socrate-page show" style="display: none;">
+    <div class="FamilyTreePage">
+
+
+      <div class="TopButtons">
+        <button id="export_btn" class="GTextBtn">Export to JSON</button>
+        <button id="import_btn" class="GTextBtn">Import from JSON</button>
+        <button id="prepare_screenshot_btn" class="GTextBtn">Prepare for Screenshot</button>
+        <button id="scale_btn" class="GTextBtn">Size 100%</button>
+        <input id="scale_input" class="ScaleInput" type="number" min="10" max="500" placeholder="100"
+          style="display: none;">
+        <button id="undo_btn" class="GTextBtn" style="opacity: 0.5; pointer-events: none;">↶ Undo</button>
+        <button id="redo_btn" class="GTextBtn" style="opacity: 0.5; pointer-events: none;">↷ Redo</button>
+      </div>
+
+      <img class="TreeBackground" src="https://cdn.ecxogames.ca/ecxogames/assets/794037.png">
+
+      <div id="FamilyTreeContainer" class="FamilyTreeContainer">
+        <div id="gridOverlay" class="gridOverlay"></div>
+      </div>
+
+      <div id="selectionBox" class="SelectionBox"></div>
+
+
+      <div id="ContextMenu" class="ContextMenu"></div>
+
+
+      <div class="AddPersonPanel">
+        <label for="img_url">Image URL</label>
+        <div class="inputWithButton">
+          <div style="position: relative;">
+            <input id="img_url" placeholder="Image URL">
+            <button id="show_how_btn" class="ShowHowBtn">show me how</button>
+          </div>
+        </div>
+        <label for="username">Username</label>
+        <input id="username" placeholder="Username">
+        <label for="display_name">Display Name</label>
+        <input id="display_name" placeholder="Display Name">
+        <label for="description">Description</label>
+        <textarea id="description" placeholder="Description"></textarea>
+        <label for="age">Age</label>
+        <input id="age" placeholder="Age">
+        <button id="add_person_btn">Add Person</button>
+        <button id="cancel_edit_btn" style="display: none;">Cancel Edit</button>
+      </div>
+
+
+      <div id="Modal" class="Modal">
+        <div class="ModalContent">
+          <div class="ModalHeader">
+            <h3>How to Add Images</h3>
+            <button id="close_modal_btn" class="CloseModalBtn">×</button>
+          </div>
+          <div class="ModalBody">
+            <video id="tutorial_video" controls="" class="TutorialVideo" gain="4">
+
+              <source src="https://cdn.ecxogames.ca/ecxogames/assets/698491.mp4">
+            </video>
+          </div>
+        </div>
+      </div>
+
+
+      <div id="ChangeImageModal" class="Modal">
+        <div class="ModalContent">
+          <div class="ModalHeader">
+            <h3>Change Person's Image</h3>
+            <button id="close_image_modal_btn" class="CloseModalBtn">×</button>
+          </div>
+          <div class="ModalBody">
+            <label for="new_img_url" style="font-weight: 600; margin-bottom: 8px; display: block;">New Image URL</label>
+            <input id="new_img_url" placeholder="Enter new image URL" style="width: 100%; margin-bottom: 16px;">
+            <button id="confirm_image_change_btn" class="ConfirmBtn">Change Image</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+
+
+  <script>
+    //@ sourceURL=PJDF
+    // PJDF - Progressive JSON Data Field
+    console.log("Loading PJDF...");
+    try {
+      const rawCode_properties = "{\n  \"title\": \"Bloxburg Family Tree Generator\",\n  \"version\": \"2.1\",\n  \"visibility\": \"Private\",\n  \"tags\": [\n    \"by ghosted\",\n    \"bloxburg family tree generator\"\n  ],\n  \"thumbnail\": \"\",\n  \"favicon\": \"\"\n}";
+      let processedCode_properties = rawCode_properties.replace(/"\$([a-zA-Z_]\w*)"/g, (match, name) => {
+        const val = window[name];
+        return JSON.stringify(typeof val === 'function' ? val() : val || '');
+      });
+      window.properties = JSON.parse(processedCode_properties);
+      console.log("Loaded PJDF: properties");
+    } catch (e) {
+      console.error('Invalid JSON in properties.config:', e);
+    }
+
+    window.addEventListener('beforeunload', function (e) {
+      e.preventDefault();
+      e.returnValue = 'You have unsaved progress in Progressive JSON Data Fields. Are you sure you want to leave?';
+    });
+
+  </script>
+
+
+
+  <script>
+    let currentPage = 'main';
+    let currentPageTitle = 'main';
+    function navigate(pageName) {
+      const normalizedName = pageName.toLowerCase().replace(/s+/g, '-');
+      const targetPage = document.getElementById('page-' + normalizedName);
+      if (!targetPage) {
+        console.error('Page not found:', pageName);
+        return;
+      }
+      const currentPageEl = document.getElementById('page-' + currentPage);
+      if (currentPageEl) {
+        currentPageEl.classList.remove('show');
+      }
+      targetPage.classList.add('show');
+      currentPage = normalizedName;
+      currentPageTitle = pageName;
+      document.title = 'Bloxburg Family Tree Generator';
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+      const initialPage = document.getElementById('page-main');
+      if (initialPage) {
+        initialPage.classList.add('show');
+      }
+    });
+  </script>
+
+
+  <script>
+    const container = document.getElementById("FamilyTreeContainer");
+    const addBtn = document.getElementById("add_person_btn");
+    const contextMenu = document.getElementById("ContextMenu");
+    const exportBtn = document.getElementById("export_btn");
+    const importBtn = document.getElementById("import_btn");
+    const prepareScreenshotBtn = document.getElementById("prepare_screenshot_btn");
+    const gridOverlay = document.getElementById("gridOverlay");
+    const selectionBox = document.getElementById("selectionBox");
+    const showHowBtn = document.getElementById("show_how_btn");
+    const modal = document.getElementById("Modal");
+    const closeModalBtn = document.getElementById("close_modal_btn");
+    const addPanel = document.querySelector('.AddPersonPanel');
+    const scaleBtn = document.getElementById("scale_btn");
+    const scaleInput = document.getElementById("scale_input");
+    const undoBtn = document.getElementById("undo_btn");
+    const redoBtn = document.getElementById("redo_btn");
+    const changeImageModal = document.getElementById("ChangeImageModal");
+    const closeImageModalBtn = document.getElementById("close_image_modal_btn");
+    const confirmImageChangeBtn = document.getElementById("confirm_image_change_btn");
+    const newImgUrlInput = document.getElementById("new_img_url");
+    const cancelEditBtn = document.getElementById("cancel_edit_btn");
+    const tutorialVideo = document.getElementById("tutorial_video");
+    const SCALE_PRESETS = [50, 70, 90, 100, 110, 130, 150];
+    let currentScaleIndex = 3;
+    let currentScale = 100;
+    let editMode = false;
+    let editingCard = null;
+    const MAX_HISTORY = 50;
+    let undoStack = [];
+    let redoStack = [];
+    let isRestoring = false;
+    function saveState() {
+      if (isRestoring) return;
+      const state = {
+        cards: [...container.querySelectorAll('.PersonCard')].map(card => ({
+          img: card.dataset.img,
+          username: card.dataset.username,
+          display_name: card.dataset.display_name,
+          description: card.dataset.description,
+          age: card.dataset.age,
+          left: card.style.left,
+          top: card.style.top
+        })),
+        scale: currentScale
+      };
+      undoStack.push(JSON.stringify(state));
+      if (undoStack.length > MAX_HISTORY) undoStack.shift();
+      redoStack = [];
+      updateUndoRedoButtons();
+    }
+    function restoreState(stateJson) {
+      isRestoring = true;
+      const state = JSON.parse(stateJson);
+      container.querySelectorAll('.PersonCard').forEach(c => c.remove());
+      state.cards.forEach(d => createPersonCard(d, true));
+      if (state.scale !== undefined) {
+        currentScale = state.scale;
+        applyScale(currentScale);
+      }
+      isRestoring = false;
+    }
+    function undo() {
+      if (undoStack.length <= 1) return;
+      const currentState = undoStack.pop();
+      redoStack.push(currentState);
+      const prevState = undoStack[undoStack.length - 1];
+      restoreState(prevState);
+      updateUndoRedoButtons();
+    }
+    function redo() {
+      if (redoStack.length === 0) return;
+      const nextState = redoStack.pop();
+      undoStack.push(nextState);
+      restoreState(nextState);
+      updateUndoRedoButtons();
+    }
+    function updateUndoRedoButtons() {
+      undoBtn.style.opacity = undoStack.length <= 1 ? '0.5' : '1';
+      undoBtn.style.pointerEvents = undoStack.length <= 1 ? 'none' : 'auto';
+      redoBtn.style.opacity = redoStack.length === 0 ? '0.5' : '1';
+      redoBtn.style.pointerEvents = redoStack.length === 0 ? 'none' : 'auto';
+    }
+    function applyScale(scale) {
+      currentScale = scale;
+      scaleBtn.textContent = `Size ${scale}%`;
+      container.style.transform = `scale(${scale / 100})`;
+      let closestIndex = 0;
+      let closestDiff = Math.abs(SCALE_PRESETS[0] - scale);
+      for (let i = 1; i < SCALE_PRESETS.length; i++) {
+        const diff = Math.abs(SCALE_PRESETS[i] - scale);
+        if (diff < closestDiff) {
+          closestDiff = diff;
+          closestIndex = i;
+        }
+      }
+      currentScaleIndex = closestIndex;
+    }
+    const GRID_SIZE = 20;
+    let isSelecting = false;
+    let selectionStartX = 0;
+    let selectionStartY = 0;
+    let dragTarget = null;
+    let currentRightClickCard = null;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+    let selectedCards = new Set();
+    let draggedCards = [];
+    let animationFrameId = null;
+    let currentMouseX = 0;
+    let currentMouseY = 0;
+    let targetX = 0;
+    let targetY = 0;
+    let currentX = 0;
+    let currentY = 0;
+    const SMOOTHING = 0.15;
+    let uiHidden = false;
+    function createPersonCard(data, restore = false) {
+      const card = document.createElement("div");
+      card.className = "PersonCard";
+      card.style.left = restore ? data.left : "100px";
+      card.style.top = restore ? data.top : "200px";
+      card.dataset.img = data.img;
+      card.dataset.username = data.username;
+      card.dataset.display_name = data.display_name;
+      card.dataset.description = data.description;
+      card.dataset.age = data.age;
+      card.innerHTML = `
+    <div class="PersonImageWrapper">
+      <img src="${data.img}">
+      <div class="PersonUsername" contenteditable="true">${data.username}</div>
+    </div>
+    <div class="PersonCardInformationWrapper">
+      <div class="PersonName" contenteditable="true">${data.display_name}</div>
+      <div class="PersonDescription" contenteditable="true">${data.description}</div>
+      <div class="PersonAge"><span class="BoldText">Age:</span> <span contenteditable="true">${data.age}</span></div>
+    </div>
+  `;
+      enableDragging(card);
+      enableRightClick(card);
+      container.appendChild(card);
+      updateCardSide(card);
+      card.querySelectorAll('[contenteditable="true"]').forEach(el => {
+        el.addEventListener('input', () => {
+          if (el.classList.contains('PersonUsername')) card.dataset.username = el.textContent.trim();
+          else if (el.classList.contains('PersonName')) card.dataset.display_name = el.textContent.trim();
+          else if (el.classList.contains('PersonDescription')) card.dataset.description = el.textContent.trim();
+          else if (el.closest('.PersonAge')) card.dataset.age = el.textContent.trim();
+        });
+      });
+      return card;
+    }
+    function updateCardSide(card) {
+      const rect = card.getBoundingClientRect();
+      const mid = window.innerWidth / 2;
+      if (rect.left < mid) {
+        card.classList.add("SideLeft");
+        card.classList.remove("SideRight");
+      } else {
+        card.classList.add("SideRight");
+        card.classList.remove("SideLeft");
+      }
+    }
+    function enableDragging(el) {
+      el.addEventListener("mousedown", e => {
+        if (e.target.closest('[contenteditable="true"]')) return;
+        if (e.button !== 0) return;
+        e.preventDefault();
+        if (e.shiftKey) {
+          toggleCardSelection(el);
+          return;
+        }
+        if (!selectedCards.has(el)) {
+          clearSelection();
+          selectCard(el);
+        }
+        dragTarget = el;
+        currentX = parseInt(el.style.left || 0);
+        currentY = parseInt(el.style.top || 0);
+        targetX = currentX;
+        targetY = currentY;
+        dragOffsetX = e.clientX - currentX;
+        dragOffsetY = e.clientY - currentY;
+        draggedCards = [];
+        selectedCards.forEach(card => {
+          const cardX = parseInt(card.style.left || 0);
+          const cardY = parseInt(card.style.top || 0);
+          draggedCards.push({
+            card: card,
+            offsetX: cardX - currentX,
+            offsetY: cardY - currentY,
+            startX: cardX,
+            startY: cardY
+          });
+          card.classList.remove('snapping');
+          card.classList.add('dragging');
+        });
+        gridOverlay.style.opacity = "1";
+        if (!animationFrameId) {
+          animationFrameId = requestAnimationFrame(smoothDragUpdate);
+        }
+      });
+    }
+    function selectCard(card) {
+      selectedCards.add(card);
+      card.classList.add('selected');
+    }
+    function deselectCard(card) {
+      selectedCards.delete(card);
+      card.classList.remove('selected');
+    }
+    function toggleCardSelection(card) {
+      if (selectedCards.has(card)) {
+        deselectCard(card);
+      } else {
+        selectCard(card);
+      }
+    }
+    function clearSelection() {
+      selectedCards.forEach(card => card.classList.remove('selected'));
+      selectedCards.clear();
+    }
+    function smoothDragUpdate() {
+      if (!dragTarget) {
+        animationFrameId = null;
+        return;
+      }
+      currentX += (targetX - currentX) * SMOOTHING;
+      currentY += (targetY - currentY) * SMOOTHING;
+      const velocityX = targetX - currentX;
+      const velocityY = targetY - currentY;
+      const velocity = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
+      const maxVelocity = 50;
+      const intensity = Math.min(velocity / maxVelocity, 1);
+      const tiltX = (velocityX / maxVelocity) * 8;
+      const tiltY = (velocityY / maxVelocity) * 4;
+      const scale = 1.03 + intensity * 0.04;
+      draggedCards.forEach(({ card, offsetX, offsetY }) => {
+        card.style.left = (currentX + offsetX) + "px";
+        card.style.top = (currentY + offsetY) + "px";
+        card.style.transform = `perspective(1000px) rotateY(${tiltX}deg) rotateX(${-tiltY}deg) scale(${scale})`;
+      });
+      animationFrameId = requestAnimationFrame(smoothDragUpdate);
+    }
+    document.addEventListener("mousemove", e => {
+      if (!dragTarget) return;
+      currentMouseX = e.clientX;
+      currentMouseY = e.clientY;
+      targetX = Math.round((currentMouseX - dragOffsetX) / GRID_SIZE) * GRID_SIZE;
+      targetY = Math.round((currentMouseY - dragOffsetY) / GRID_SIZE) * GRID_SIZE;
+    });
+    document.addEventListener("mouseup", () => {
+      if (dragTarget) {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+        draggedCards.forEach(({ card, offsetX, offsetY }) => {
+          let left = parseInt(card.style.left);
+          let top = parseInt(card.style.top);
+          left = Math.round(left / GRID_SIZE) * GRID_SIZE;
+          top = Math.round(top / GRID_SIZE) * GRID_SIZE;
+          card.classList.add('snapping');
+          card.classList.remove('dragging');
+          card.style.transform = 'perspective(1000px) rotateY(0deg) rotateX(0deg) scale(1)';
+          card.style.left = left + "px";
+          card.style.top = top + "px";
+          updateCardSide(card);
+          setTimeout(() => {
+            card.classList.remove('snapping');
+          }, 400);
+        });
+        dragTarget = null;
+        draggedCards = [];
+        saveState();
+      }
+      gridOverlay.style.opacity = "0";
+    });
+    function enableRightClick(card) {
+      card.addEventListener("contextmenu", e => {
+        e.preventDefault();
+        currentRightClickCard = card;
+        showContextMenu(e.clientX, e.clientY, "card");
+      });
+    }
+    document.addEventListener("contextmenu", e => {
+      if (e.target.closest(".PersonCard")) return;
+      e.preventDefault();
+      currentRightClickCard = null;
+      showContextMenu(e.clientX, e.clientY, "empty");
+    });
+    function showContextMenu(x, y, mode) {
+      contextMenu.style.left = x + "px";
+      contextMenu.style.top = y + "px";
+      contextMenu.style.display = "block";
+      if (mode === "card") {
+        contextMenu.innerHTML = `
+      <button onclick="editCard()">Edit</button>
+      <button onclick="changeCardImage()">Change Image</button>
+      <button onclick="deleteCard()">Delete</button>
+      <button onclick="duplicateCard()">Duplicate</button>
+      <button onclick="exportCardJSON()">Export JSON</button>
+    `;
+      } else {
+        contextMenu.innerHTML = `
+      <button onclick="importTree()">Import Tree JSON</button>
+      <button onclick="clearTree()">Clear</button>
+    `;
+      }
+    }
+    document.addEventListener("click", () => {
+      contextMenu.style.display = "none";
+    });
+    showHowBtn.addEventListener("click", () => {
+      modal.classList.add("show");
+    });
+    closeModalBtn.addEventListener("click", () => {
+      modal.classList.remove("show");
+      tutorialVideo.pause();
+    });
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.classList.remove("show");
+      }
+    });
+    closeImageModalBtn.addEventListener("click", () => {
+      changeImageModal.classList.remove("show");
+      newImgUrlInput.value = "";
+    });
+    changeImageModal.addEventListener("click", (e) => {
+      if (e.target === changeImageModal) {
+        changeImageModal.classList.remove("show");
+        newImgUrlInput.value = "";
+      }
+    });
+    confirmImageChangeBtn.addEventListener("click", () => {
+      if (currentRightClickCard && newImgUrlInput.value.trim()) {
+        const newUrl = newImgUrlInput.value.trim();
+        currentRightClickCard.dataset.img = newUrl;
+        currentRightClickCard.querySelector('.PersonImageWrapper img').src = newUrl;
+        changeImageModal.classList.remove("show");
+        newImgUrlInput.value = "";
+      }
+    });
+    scaleBtn.addEventListener("click", () => {
+      currentScaleIndex = (currentScaleIndex + 1) % SCALE_PRESETS.length;
+      const scale = SCALE_PRESETS[currentScaleIndex];
+      applyScale(scale);
+      saveState();
+    });
+    scaleBtn.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      scaleBtn.style.display = "none";
+      scaleInput.style.display = "block";
+      scaleInput.value = currentScale;
+      scaleInput.focus();
+      scaleInput.select();
+    });
+    scaleInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        let newScale = parseInt(scaleInput.value) || 100;
+        newScale = Math.max(10, Math.min(500, newScale));
+        applyScale(newScale);
+        saveState();
+        scaleInput.style.display = "none";
+        scaleBtn.style.display = "block";
+      } else if (e.key === "Escape") {
+        scaleInput.style.display = "none";
+        scaleBtn.style.display = "block";
+      }
+    });
+    scaleInput.addEventListener("blur", () => {
+      scaleInput.style.display = "none";
+      scaleBtn.style.display = "block";
+    });
+    undoBtn.addEventListener("click", undo);
+    redoBtn.addEventListener("click", redo);
+    document.addEventListener("keydown", (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.isContentEditable) return;
+      if (e.ctrlKey && e.key === "z") {
+        e.preventDefault();
+        undo();
+      } else if (e.ctrlKey && e.key === "y") {
+        e.preventDefault();
+        redo();
+      } else if (e.key === "Escape") {
+        clearSelection();
+      } else if (e.ctrlKey && e.key === "a") {
+        e.preventDefault();
+        container.querySelectorAll('.PersonCard').forEach(card => selectCard(card));
+      } else if (e.key === "Delete" || e.key === "Backspace") {
+        if (selectedCards.size > 0) {
+          e.preventDefault();
+          selectedCards.forEach(card => card.remove());
+          clearSelection();
+          saveState();
+        }
+      }
+    });
+    cancelEditBtn.addEventListener("click", () => {
+      exitEditMode();
+    });
+    function enterEditMode(card) {
+      editMode = true;
+      editingCard = card;
+      document.getElementById("img_url").value = card.dataset.img || "";
+      document.getElementById("username").value = card.dataset.username || "";
+      document.getElementById("display_name").value = card.dataset.display_name || "";
+      document.getElementById("description").value = card.dataset.description || "";
+      document.getElementById("age").value = card.dataset.age || "";
+      addBtn.textContent = "Update Person";
+      cancelEditBtn.style.display = "block";
+      card.style.outline = "3px solid #2563eb";
+      card.style.outlineOffset = "2px";
+    }
+    function exitEditMode() {
+      if (editingCard) {
+        editingCard.style.outline = "";
+        editingCard.style.outlineOffset = "";
+      }
+      editMode = false;
+      editingCard = null;
+      document.getElementById("img_url").value = "";
+      document.getElementById("username").value = "";
+      document.getElementById("display_name").value = "";
+      document.getElementById("description").value = "";
+      document.getElementById("age").value = "";
+      addBtn.textContent = "Add Person";
+      cancelEditBtn.style.display = "none";
+    }
+    function editCard() {
+      if (!currentRightClickCard) return;
+      enterEditMode(currentRightClickCard);
+    }
+    function changeCardImage() {
+      if (!currentRightClickCard) return;
+      newImgUrlInput.value = currentRightClickCard.dataset.img || "";
+      changeImageModal.classList.add("show");
+    }
+    function deleteCard() {
+      if (!currentRightClickCard) return;
+      currentRightClickCard.remove();
+      saveState();
+    }
+    function duplicateCard() {
+      if (!currentRightClickCard) return;
+      const data = serializeCard(currentRightClickCard);
+      data.left = (parseInt(data.left) + 20) + "px";
+      data.top = (parseInt(data.top) + 20) + "px";
+      createPersonCard(data, true);
+      saveState();
+    }
+    function exportCardJSON() {
+      if (!currentRightClickCard) return;
+      const data = serializeCard(currentRightClickCard);
+      downloadJSON(data, "person.json");
+    }
+    exportBtn.onclick = () => {
+      const exportData = {
+        scale: currentScale,
+        cards: [...container.querySelectorAll('.PersonCard')].map(serializeCard)
+      };
+      downloadJSON(exportData, "family_tree.json");
+    };
+    importBtn.onclick = () => importTree();
+    prepareScreenshotBtn.onclick = () => {
+      if (uiHidden) {
+        exportBtn.style.display = 'inline-block';
+        importBtn.style.display = 'inline-block';
+        addPanel.style.display = 'flex';
+        prepareScreenshotBtn.textContent = 'Prepare for Screenshot';
+        uiHidden = false;
+      } else {
+        exportBtn.style.display = 'none';
+        importBtn.style.display = 'none';
+        addPanel.style.display = 'none';
+        prepareScreenshotBtn.textContent = 'Show UI';
+        uiHidden = true;
+      }
+    };
+    function clearTree() {
+      const cards = container.querySelectorAll('.PersonCard');
+      cards.forEach(card => card.remove());
+    }
+    function importTree() {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = ".json";
+      input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = () => {
+          const data = JSON.parse(reader.result);
+          clearTree();
+          if (data.cards && Array.isArray(data.cards)) {
+            data.cards.forEach(d => createPersonCard(d, true));
+            if (data.scale !== undefined) {
+              applyScale(data.scale);
+            }
+          } else if (Array.isArray(data)) {
+            data.forEach(d => createPersonCard(d, true));
+          }
+          saveState();
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
+    function serializeCard(card) {
+      return {
+        img: card.dataset.img,
+        username: card.dataset.username,
+        display_name: card.dataset.display_name,
+        description: card.dataset.description,
+        age: card.dataset.age,
+        left: card.style.left,
+        top: card.style.top
+      };
+    }
+    addBtn.onclick = () => {
+      const data = {
+        img: document.getElementById("img_url").value,
+        username: document.getElementById("username").value,
+        display_name: document.getElementById("display_name").value,
+        description: document.getElementById("description").value,
+        age: document.getElementById("age").value
+      };
+      if (editMode && editingCard) {
+        editingCard.dataset.img = data.img;
+        editingCard.dataset.username = data.username;
+        editingCard.dataset.display_name = data.display_name;
+        editingCard.dataset.description = data.description;
+        editingCard.dataset.age = data.age;
+        editingCard.querySelector('.PersonImageWrapper img').src = data.img;
+        editingCard.querySelector('.PersonUsername').textContent = data.username;
+        editingCard.querySelector('.PersonName').textContent = data.display_name;
+        editingCard.querySelector('.PersonDescription').textContent = data.description;
+        editingCard.querySelector('.PersonAge span[contenteditable]').textContent = data.age;
+        exitEditMode();
+      } else {
+        createPersonCard(data);
+      }
+      saveState();
+    };
+    saveState();
+    updateUndoRedoButtons();
+    function downloadJSON(obj, name) {
+      const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      a.click();
+    }
+    document.addEventListener("mousedown", e => {
+      const target = e.target;
+      if (target.closest('.PersonCard') ||
+        target.closest('.AddPersonPanel') ||
+        target.closest('.TopButtons') ||
+        target.closest('.ContextMenu') ||
+        target.closest('.Modal')) {
+        return;
+      }
+      if (target.classList.contains('FamilyTreePage') ||
+        target.classList.contains('TreeBackground') ||
+        target.classList.contains('FamilyTreeContainer') ||
+        target.classList.contains('gridOverlay') ||
+        target === container) {
+        if (e.button !== 0) return;
+        if (!e.shiftKey) {
+          clearSelection();
+        }
+        isSelecting = true;
+        selectionStartX = e.clientX;
+        selectionStartY = e.clientY;
+        selectionBox.style.left = selectionStartX + "px";
+        selectionBox.style.top = selectionStartY + "px";
+        selectionBox.style.width = "0px";
+        selectionBox.style.height = "0px";
+        selectionBox.style.display = "block";
+      }
+    });
+    document.addEventListener("mousemove", e => {
+      if (!isSelecting) return;
+      const currentX = e.clientX;
+      const currentY = e.clientY;
+      const left = Math.min(selectionStartX, currentX);
+      const top = Math.min(selectionStartY, currentY);
+      const width = Math.abs(currentX - selectionStartX);
+      const height = Math.abs(currentY - selectionStartY);
+      selectionBox.style.left = left + "px";
+      selectionBox.style.top = top + "px";
+      selectionBox.style.width = width + "px";
+      selectionBox.style.height = height + "px";
+    });
+    document.addEventListener("mouseup", e => {
+      if (isSelecting) {
+        const boxLeft = parseInt(selectionBox.style.left);
+        const boxTop = parseInt(selectionBox.style.top);
+        const boxWidth = parseInt(selectionBox.style.width);
+        const boxHeight = parseInt(selectionBox.style.height);
+        const boxRight = boxLeft + boxWidth;
+        const boxBottom = boxTop + boxHeight;
+        if (boxWidth > 5 || boxHeight > 5) {
+          if (!e.shiftKey) {
+            clearSelection();
+          }
+          const cards = container.querySelectorAll('.PersonCard');
+          cards.forEach(card => {
+            const rect = card.getBoundingClientRect();
+            if (rect.left < boxRight &&
+              rect.right > boxLeft &&
+              rect.top < boxBottom &&
+              rect.bottom > boxTop) {
+              selectCard(card);
+            }
+          });
+        }
+        selectionBox.style.display = "none";
+        isSelecting = false;
+      }
+    });
+  </script>
+
+
+  <script>
+    class Scene {
+      constructor(TYPE, ELEMENTS, EVENTS, ID) {
+        this.TYPE = TYPE;
+        this.ELEMENTS = ELEMENTS;
+        this.EVENTS = EVENTS;
+        this.ID = ID;
+      }
+      static Create(TYPE, ELEMENTS = [], EVENTS = new Map(), ID) {
+        return new Scene(TYPE, ELEMENTS, EVENTS, ID);
+      }
+    }
+  </script>
+
+  <script>
+    window.onerror = function (message, source, lineno, colno, error) {
+      if (window.opener) {
+        window.opener.postMessage({
+          type: 'compilationError',
+          error: { message, source, lineno, colno }
+        }, '*');
+      }
+      return false; // Let the error propagate
+    };
+  </script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techtoby Corp - Desktop</title>
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --glass-shadow: rgba(0, 0, 0, 0.2);
+            --text-color: #000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: url('media/100001.png') center/cover no-repeat;
+            display: flex;
+            flex-direction: column;
+            color: var(--text-color);
+            position: relative;
+            /* Avoid native selection while dragging */
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Desktop area */
+        .desktop {
+            flex: 1;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            grid-auto-rows: 150px;
+            gap: 1.5rem;
+            z-index: 1;
+            align-content: start;
+            position: relative;
+        }
+
+        .widget-iframe {
+            border: none;
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            pointer-events: auto; /* Allow interaction with widgets */
+            background: transparent;
+        }
+
+        .app-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: var(--text-color);
+            padding: 1rem;
+            border-radius: 15px;
+            transition: all 0.2s ease;
+            background: transparent;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .app-icon:hover {
+            transform: translateY(-5px);
+        }
+
+        .icon-img {
+            width: 64px;
+            height: 64px;
+            border-radius: 20%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 16px 0 var(--glass-shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.8rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            overflow: hidden;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .icon-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .app-icon:hover .icon-img, .app-icon.selected .icon-img {
+            box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.4);
+        }
+
+        .app-name {
+            font-size: 0.9rem;
+            text-align: center;
+            text-shadow: none;
+            font-weight: 600;
+        }
+
+        .credits {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            z-index: 5;
+        }
+        
+        .credits a {
+            color: #000;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .credits a:hover {
+            text-decoration: underline;
+        }
+
+        /* Context Menu */
+        .ContextMenu {
+            position: absolute;
+            display: none;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            z-index: 200;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12),
+              inset 0 1px 1px rgba(255, 255, 255, 0.6);
+            overflow: hidden;
+            padding: 4px;
+        }
+
+        .ContextMenu button {
+            display: block;
+            width: 180px;
+            padding: 10px 12px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 13px;
+            color: #000;
+            transition: background 0.15s ease;
+        }
+
+        .ContextMenu button:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Modal */
+        .Modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .Modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .ModalContent {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15),
+              inset 0 1px 1px rgba(255, 255, 255, 0.6);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow: hidden;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            color: #000;
+        }
+
+        .Modal.show .ModalContent {
+            transform: scale(1);
+        }
+
+        .ModalHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .ModalHeader h3 {
+            margin: 0;
+            color: #000;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .CloseModalBtn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #000;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+            transition: background 0.2s ease, color 0.2s ease;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .CloseModalBtn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .ModalBody {
+            padding: 24px;
+        }
+
+        /* Selection Box */
+        .selection-box {
+            position: fixed;
+            border: 2px solid rgba(59, 130, 246, 0.8);
+            background: rgba(59, 130, 246, 0.15);
+            pointer-events: none;
+            z-index: 100;
+            display: none;
+            border-radius: 2px;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Customization Mode */
+        .customize-banner {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            color: #000;
+            text-align: center;
+            padding: 10px;
+            z-index: 2000;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        body.customizing .customize-banner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        body.customizing .desktop-item {
+            animation: jiggle 0.3s infinite;
+        }
+
+        body.customizing .widget-iframe {
+            pointer-events: none !important;
+        }
+
+        body.customizing .desktop-item {
+            cursor: grab !important;
+        }
+
+        body.customizing .desktop-item:active {
+            cursor: grabbing !important;
+        }
+
+        @keyframes jiggle {
+            0% { transform: rotate(-1deg) translateY(-2px); }
+            100% { transform: rotate(1deg) translateY(0px); }
+        }
+
+        .done-btn {
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="customize-banner">
+        Customizing Home Screen... Drag items to rearrange.
+        <button class="done-btn" id="doneCustomizeBtn">Done</button>
+    </div>
+    <!-- Desktop Area -->
+    <div class="desktop" id="desktop">
+        
+        <a href="bbcomputer" class="app-icon desktop-item" title="Design nice computer desktop decals for your Bloxburg builds!" draggable="true">
+            <div class="icon-img">
+                💻
+            </div>
+            <div class="app-name">bbcomputer</div>
+        </a>
+
+        <a href="bbfamtree" class="app-icon desktop-item" title="Design a family tree for your Bloxburg builds!" draggable="true">
+            <div class="icon-img">
+                <img src="https://cdn.shawnyxx.dev/assets/655910.png" alt="Tree Icon" onerror="this.style.display='none'; this.parentNode.innerHTML='🌳'">
+            </div>
+            <div class="app-name">bbfamtree</div>
+        </a>
+
+        <a href="bbmural" class="app-icon desktop-item" title="Design a mural for your Bloxburg builds!" draggable="true">
+            <div class="icon-img">
+                <img src="https://cdn.shawnyxx.dev/icons/158450.png" alt="Mural Icon" onerror="this.style.display='none'; this.parentNode.innerHTML='🎨'">
+            </div>
+            <div class="app-name">bbmural</div>
+        </a>
+
+        <!-- Selection box element -->
+        <div class="selection-box" id="selection-box"></div>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="desktopContextMenu" class="ContextMenu">
+        <button id="hideAppsBtn">Hide Selected Apps</button>
+        <button id="viewHiddenAppsBtn">View Hidden Apps</button>
+        <button id="addWidgetsBtn">Add Widgets</button>
+        <button id="customizeHomeBtn">Customize Home Screen</button>
+    </div>
+
+    <!-- Reusable Modal Layout -->
+    <div id="appModal" class="Modal">
+        <div class="ModalContent">
+            <div class="ModalHeader">
+                <h3 id="modalTitle">Modal Title</h3>
+                <button class="CloseModalBtn" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="ModalBody" id="modalBody">
+                <!-- Modal content will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="credits">
+        Designed by <a href="https://www.youtube.com/channel/@dummtoby" target="_blank">dummtoby</a>
+    </div>
+
+    <script>
+        // Load Widgets
+        async function loadWidgets() {
+            try {
+                const response = await fetch('widgets/manifest.json');
+                const widgets = await response.json();
+                
+                const desktopElement = document.getElementById('desktop');
+                
+                widgets.forEach(widget => {
+                    const widgetContainer = document.createElement('div');
+                    widgetContainer.style.gridColumn = `span ${widget.defaultSize.columns}`;
+                    widgetContainer.style.gridRow = `span ${widget.defaultSize.rows}`;
+                    widgetContainer.style.position = 'relative';
+                    widgetContainer.style.zIndex = '2';
+                    widgetContainer.className = 'desktop-item';
+                    widgetContainer.setAttribute('draggable', 'true');
+                    
+                    const iframe = document.createElement('iframe');
+                    iframe.src = widget.path;
+                    iframe.className = 'widget-iframe';
+                    iframe.title = widget.name;
+                    
+                    widgetContainer.appendChild(iframe);
+                    
+                    // Insert before the first app icon so widgets appear first
+                    const firstApp = desktopElement.querySelector('.app-icon');
+                    if (firstApp) {
+                        desktopElement.insertBefore(widgetContainer, firstApp);
+                    } else {
+                        desktopElement.appendChild(widgetContainer);
+                    }
+                });
+            } catch (error) {
+                console.error("Error loading widgets:", error);
+            }
+        }
+
+        loadWidgets();
+
+        // Rectangle Selection Logic
+        const desktop = document.querySelector('.desktop');
+        const selectionBox = document.getElementById('selection-box');
+        const icons = document.querySelectorAll('.app-icon');
+        
+        let isSelecting = false;
+        let startX = 0;
+        let startY = 0;
+
+        // Start drawing the box
+        desktop.addEventListener('mousedown', (e) => {
+            // Check if we are clicking on an icon or its descendant directly
+            if (e.target.closest('.app-icon')) {
+                return;
+            }
+
+            // Ensure we don't start selection if right clicking
+            if (e.button !== 0) return;
+
+            isSelecting = true;
+            
+            // Getting coordinates relative to the desktop container can be safer, 
+            // but pageX/pageY works if body doesn't scroll
+            startX = e.clientX;
+            startY = e.clientY;
+            
+            selectionBox.style.left = startX + 'px';
+            selectionBox.style.top = startY + 'px';
+            selectionBox.style.width = '0px';
+            selectionBox.style.height = '0px';
+            selectionBox.style.display = 'block';
+
+            // Clear previously selected
+            icons.forEach(app => app.classList.remove('selected'));
+        });
+
+        // Update box size while mouse moves
+        window.addEventListener('mousemove', (e) => {
+            if (!isSelecting) return;
+
+            const currentX = e.clientX;
+            const currentY = e.clientY;
+
+            const width = Math.abs(currentX - startX);
+            const height = Math.abs(currentY - startY);
+            const left = Math.min(startX, currentX);
+            const top = Math.min(startY, currentY);
+
+            selectionBox.style.width = width + 'px';
+            selectionBox.style.height = height + 'px';
+            selectionBox.style.left = left + 'px';
+            selectionBox.style.top = top + 'px';
+
+            // Check intersections
+            const boxRect = selectionBox.getBoundingClientRect();
+            
+            icons.forEach(app => {
+                const appRect = app.getBoundingClientRect();
+                
+                // Check overlap
+                const isOverlapping = !(
+                    boxRect.right < appRect.left ||
+                    boxRect.left > appRect.right ||
+                    boxRect.bottom < appRect.top ||
+                    boxRect.top > appRect.bottom
+                );
+
+                if (isOverlapping) {
+                    app.classList.add('selected');
+                } else {
+                    app.classList.remove('selected');
+                }
+            });
+        });
+
+        // Stop selection
+        window.addEventListener('mouseup', () => {
+            isSelecting = false;
+            // keep selection visible by not stripping the .selected class
+            selectionBox.style.display = 'none';
+        });
+
+        // Additionally click functionality to select single icon / open icon
+        icons.forEach(icon => {
+            icon.addEventListener('click', (e) => {
+                // If it's a link, we let it navigate naturally
+                // Remove selection from all others to simulate standard OS behaviour
+                icons.forEach(app => app.classList.remove('selected'));
+                icon.classList.add('selected');
+            });
+        });
+
+        // Context Menu Logic
+        const contextMenu = document.getElementById('desktopContextMenu');
+        
+        desktop.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            const { clientX: mouseX, clientY: mouseY } = e;
+            
+            contextMenu.style.display = 'block';
+            contextMenu.style.left = `${mouseX}px`;
+            contextMenu.style.top = `${mouseY}px`;
+        });
+
+        document.addEventListener('click', (e) => {
+            if (e.button === 0) {
+                contextMenu.style.display = 'none';
+            }
+        });
+
+        // Modal Logic
+        const modal = document.getElementById('appModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        function openModal(title, contentHTML) {
+            modalTitle.textContent = title;
+            modalBody.innerHTML = contentHTML;
+            modal.classList.add('show');
+            contextMenu.style.display = 'none'; // hide context menu when opening a modal
+        }
+
+        closeModalBtn.addEventListener('click', () => {
+            modal.classList.remove('show');
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('show');
+            }
+        });
+
+        // Context Menu Button Actions
+        document.getElementById('hideAppsBtn').addEventListener('click', () => {
+            let selectedCount = 0;
+            const allSelectedApps = document.querySelectorAll('.app-icon.selected');
+            allSelectedApps.forEach(app => {
+                app.style.display = 'none';
+                app.classList.remove('selected');
+                app.classList.add('hidden-app');
+                selectedCount++;
+            });
+            openModal('Apps Hidden', `<p>${selectedCount} app(s) have been hidden from the home screen.</p>`);
+        });
+
+        document.getElementById('viewHiddenAppsBtn').addEventListener('click', () => {
+            const hiddenApps = document.querySelectorAll('.hidden-app');
+            openModal('Hidden Apps', `<p>You have ${hiddenApps.length} hidden app(s). Click below to restore them all.</p><button id="restoreAppsBtn" style="margin-top: 10px; padding: 10px 15px; border-radius: 8px; border: none; background: rgba(255,255,255,0.2); color: white; cursor: pointer;">Restore All Apps</button>`);
+            
+            const restoreBtn = document.getElementById('restoreAppsBtn');
+            if (restoreBtn) {
+                restoreBtn.addEventListener('click', () => {
+                    hiddenApps.forEach(app => {
+                        app.style.display = 'flex';
+                        app.classList.remove('hidden-app');
+                    });
+                    modal.classList.remove('show');
+                });
+            }
+        });
+
+        document.getElementById('addWidgetsBtn').addEventListener('click', () => {
+            openModal('Add Widgets', `<p>Select a widget from the list below to add it to your screen.</p>
+                <ul style="list-style:none; padding:0; margin-top:20px;">
+                    <li style="padding:10px; margin-bottom:10px; background:rgba(255,255,255,0.2); border-radius:8px; cursor:pointer;">Clock Widget</li>
+                    <li style="padding:10px; margin-bottom:10px; background:rgba(255,255,255,0.2); border-radius:8px; cursor:pointer;">Techtoby Profile</li>
+                </ul>`);
+        });
+
+        document.getElementById('customizeHomeBtn').addEventListener('click', () => {
+            document.body.classList.add('customizing');
+        });
+
+        document.getElementById('doneCustomizeBtn').addEventListener('click', () => {
+            document.body.classList.remove('customizing');
+        });
+
+        // Prevent link clicking while customizing
+        desktop.addEventListener('click', (e) => {
+            if (document.body.classList.contains('customizing')) {
+                const item = e.target.closest('a.desktop-item');
+                if (item) {
+                    e.preventDefault();
+                }
+            }
+        });
+
+        // Drag and Drop Logic for Reorganizing
+        let draggedItem = null;
+
+        desktop.addEventListener('dragstart', (e) => {
+            if (!document.body.classList.contains('customizing')) {
+                // If not in customization mode, optionally prevent drag
+                e.preventDefault();
+                return;
+            }
+            const item = e.target.closest('.desktop-item');
+            if (item) {
+                draggedItem = item;
+                item.style.opacity = '0.4';
+                e.dataTransfer.effectAllowed = 'move';
+                // Necessary for Firefox
+                if (e.dataTransfer.setData) e.dataTransfer.setData('text/plain', '');
+            } else {
+                e.preventDefault();
+            }
+        });
+
+        desktop.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        });
+
+        desktop.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (!draggedItem) return;
+            const targetItem = e.target.closest('.desktop-item');
+            if (targetItem && targetItem !== draggedItem) {
+                const allItems = Array.from(desktop.querySelectorAll('.desktop-item'));
+                const draggedIndex = allItems.indexOf(draggedItem);
+                const targetIndex = allItems.indexOf(targetItem);
+
+                if (draggedIndex < targetIndex) {
+                    targetItem.parentNode.insertBefore(draggedItem, targetItem.nextSibling);
+                } else {
+                    targetItem.parentNode.insertBefore(draggedItem, targetItem);
+                }
+            }
+            draggedItem.style.opacity = '1';
+            draggedItem = null;
+        });
+
+        desktop.addEventListener('dragend', (e) => {
+            if (draggedItem) {
+                draggedItem.style.opacity = '1';
+                draggedItem = null;
+            }
+        });
+
+    </script>
+</body>
+</html>

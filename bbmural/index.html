@@ -1,0 +1,2058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mural Splitter</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="shortcut icon" href="https://cdn.shawnyxx.dev/icons/158450.png" type="image/png">
+    <style>
+        /* =============================================================================
+           GLASSMORPHIC APP STYLESHEET - Bloxburg Style
+           ============================================================================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background: #DCDCDC;
+            color: rgba(0, 0, 0, 0.8);
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .TreeBackground {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .gridOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 2;
+            opacity: 1;
+            /* Modern dot grid pattern */
+            background-image: 
+                radial-gradient(circle, rgba(99, 102, 241, 0.4) 1.5px, transparent 1.5px),
+                radial-gradient(circle, rgba(99, 102, 241, 0.15) 1px, transparent 1px);
+            background-size: 20px 20px, 100px 100px;
+            background-position: 0 0, 0 0;
+            pointer-events: none;
+        }
+
+        .full-container {
+            position: relative;
+            z-index: 10;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .app-window {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            max-width: 900px;
+            max-height: 90vh;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15),
+                inset 0 1px 1px rgba(255, 255, 255, 0.6);
+            overflow: hidden;
+        }
+
+        /* ========== STEP TIMELINE ========== */
+        .timeline-header {
+            background: rgba(255, 255, 255, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 20px 24px;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .timeline-left {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .timeline-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timeline {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            max-width: 600px;
+        }
+
+        .timeline-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .timeline-step:hover:not(.disabled) {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .timeline-step.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .timeline-step.active {
+            background: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .timeline-step.completed .step-number {
+            background: rgba(76, 175, 80, 0.9);
+            border-color: rgba(76, 175, 80, 0.9);
+        }
+
+        .timeline-step.active .step-number {
+            background: rgba(37, 99, 235, 0.8);
+            border-color: rgba(37, 99, 235, 0.8);
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            border: 2px solid rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(0, 0, 0, 0.5);
+            transition: all 0.2s ease;
+        }
+
+        .timeline-step.completed .step-number,
+        .timeline-step.active .step-number {
+            color: #fff;
+        }
+
+        .step-label {
+            font-size: 14px;
+            font-weight: 400;
+            color: rgba(0, 0, 0, 0.5);
+        }
+
+        .timeline-step.active .step-label,
+        .timeline-step.completed .step-label {
+            color: rgba(0, 0, 0, 0.8);
+            font-weight: 500;
+        }
+
+        .timeline-connector {
+            width: 40px;
+            height: 2px;
+            background: rgba(0, 0, 0, 0.15);
+            transition: background 0.3s ease;
+        }
+
+        .timeline-connector.completed {
+            background: rgba(76, 175, 80, 0.8);
+        }
+
+        /* ========== MAIN CONTENT ========== */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        .main-content::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .main-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .main-content::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 5px;
+        }
+
+        .step-content {
+            max-width: 800px;
+            margin: 0 auto;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 500;
+            color: rgba(0, 0, 0, 0.85);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-description {
+            font-size: 14px;
+            color: rgba(0, 0, 0, 0.5);
+            font-weight: 400;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 1px rgba(255, 255, 255, 0.6);
+        }
+
+        .card:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: rgba(0, 0, 0, 0.8);
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: black;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+            text-decoration: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1),
+                inset 0 1px 1px rgba(255, 255, 255, 0.6);
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.35);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15),
+                inset 0 1px 1px rgba(255, 255, 255, 0.8);
+            color: black;
+        }
+
+        .btn-primary {
+            background: rgba(37, 99, 235, 0.8);
+            backdrop-filter: blur(8px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: rgba(37, 99, 235, 1);
+            transform: translateY(-1px) scale(1.02);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-icon {
+            padding: 10px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-lg {
+            padding: 10px 16px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: rgba(0, 0, 0, 0.6);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        select {
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: black;
+            outline: none;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            font-size: 14px;
+            font-weight: 400;
+            font-family: inherit;
+            transition: background 0.2s ease, border 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        select:focus {
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(0, 0, 0, 0.25);
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(0, 0, 0, 0.2);
+            padding: 60px 40px;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+            border-radius: 16px;
+        }
+
+        .upload-area:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(0, 0, 0, 0.3);
+        }
+
+        .upload-area.dragover {
+            border-color: rgba(37, 99, 235, 0.6);
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 56px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+            color: rgba(0, 0, 0, 0.5);
+        }
+
+        .upload-text {
+            font-size: 16px;
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 8px;
+        }
+
+        .upload-subtext {
+            font-size: 13px;
+            color: rgba(0, 0, 0, 0.4);
+        }
+
+        /* ========== PRESET CARDS ========== */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .preset-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 20px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        }
+
+        .preset-card:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(1.02);
+        }
+
+        .preset-card.selected {
+            border-color: rgba(37, 99, 235, 0.6);
+            background: rgba(37, 99, 235, 0.1);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.15);
+        }
+
+        .preset-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .preset-card-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preset-card.selected .preset-card-icon {
+            background: rgba(37, 99, 235, 0.2);
+        }
+
+        .preset-card-icon .material-symbols-outlined {
+            font-size: 22px;
+            color: rgba(0, 0, 0, 0.5);
+        }
+
+        .preset-card.selected .preset-card-icon .material-symbols-outlined {
+            color: rgba(37, 99, 235, 0.9);
+        }
+
+        .preset-card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: rgba(0, 0, 0, 0.8);
+        }
+
+        .preset-card-desc {
+            font-size: 13px;
+            color: rgba(0, 0, 0, 0.5);
+            margin-bottom: 15px;
+        }
+
+        .preset-dropdown {
+            margin-top: 12px;
+        }
+
+        .preset-dropdown label {
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.5);
+            margin-bottom: 6px;
+        }
+
+        /* ========== SEAMLESS TILE GRID ========== */
+        .tiles-container {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 14px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        }
+
+        .tiles-grid {
+            display: grid;
+            gap: 0;
+            background: rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .tile-cell {
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            border: 1px dashed rgba(0, 0, 0, 0.3);
+            box-sizing: border-box;
+        }
+
+        .tile-cell canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .tile-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: scale(1.05);
+        }
+
+        .tile-cell:hover .tile-overlay {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .tile-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(0, 0, 0, 0.85);
+            margin-bottom: 4px;
+            text-shadow: 0 1px 4px rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.3);
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transform: translateY(-10px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .tile-cell:hover .tile-label {
+            transform: translateY(0);
+        }
+
+        .tile-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 80%;
+            transform: translateY(10px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .tile-cell:hover .tile-actions {
+            transform: translateY(0);
+        }
+
+        .tile-btn {
+            width: 100%;
+            justify-content: center;
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            color: rgba(0, 0, 0, 0.8);
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+        }
+
+        .tile-btn:hover {
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+            color: black;
+        }
+
+        .tile-btn .material-symbols-outlined {
+            font-size: 16px;
+        }
+
+        /* ========== IMAGE PREVIEW ========== */
+        .image-preview-area {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .preview-image-wrapper {
+            position: relative;
+        }
+
+        .preview-image-wrapper img {
+            max-height: 200px;
+            max-width: 300px;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.3);
+            display: block;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .grid-overlay-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* ========== CROP HANDLE ========== */
+        .crop-handle {
+            position: absolute;
+            display: none;
+            border: 2px dashed rgba(37, 99, 235, 0.9);
+            cursor: move;
+            z-index: 10;
+        }
+
+        .crop-handle-label {
+            position: absolute;
+            bottom: 7px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(37, 99, 235, 0.85);
+            color: white;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 3px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .crop-handle-corner {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: white;
+            border: 2px solid rgba(37, 99, 235, 0.9);
+            border-radius: 2px;
+            pointer-events: none;
+        }
+        .crop-handle-corner.tl { top: -5px; left: -5px; }
+        .crop-handle-corner.tr { top: -5px; right: -5px; }
+        .crop-handle-corner.bl { bottom: -5px; left: -5px; }
+        .crop-handle-corner.br { bottom: -5px; right: -5px; }
+
+        .preview-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .preview-info-label {
+            font-size: 13px;
+            color: rgba(0, 0, 0, 0.5);
+            margin-bottom: 4px;
+        }
+
+        .preview-info-value {
+            font-size: 20px;
+            font-weight: 500;
+            color: rgba(0, 0, 0, 0.85);
+        }
+
+        .preview-info-sub {
+            font-size: 13px;
+            color: rgba(0, 0, 0, 0.4);
+            margin-top: 8px;
+        }
+
+        /* ========== ACTION BAR ========== */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .action-bar-left,
+        .action-bar-right {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* ========== EXPORT HEADER ========== */
+        .export-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .export-info {
+            font-size: 14px;
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        .export-info strong {
+            color: rgba(0, 0, 0, 0.85);
+        }
+
+        /* ========== PROGRESS BAR ========== */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .progress-bar.active {
+            display: block;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: rgba(37, 99, 235, 0.8);
+            width: 0%;
+            transition: width 0.2s ease;
+        }
+
+        /* ========== TOAST NOTIFICATIONS ========== */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 14px 20px;
+            border-radius: 12px;
+            color: rgba(0, 0, 0, 0.8);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12),
+                inset 0 1px 1px rgba(255, 255, 255, 0.6);
+            max-width: 350px;
+        }
+
+        .toast.success { border-left: 4px solid #4caf50; }
+        .toast.error { border-left: 4px solid #f44336; }
+        .toast.info { border-left: 4px solid rgba(37, 99, 235, 0.8); }
+
+        .toast .material-symbols-outlined { font-size: 20px; }
+        .toast.success .material-symbols-outlined { color: #4caf50; }
+        .toast.error .material-symbols-outlined { color: #f44336; }
+        .toast.info .material-symbols-outlined { color: rgba(37, 99, 235, 0.9); }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(50px); }
+        }
+
+        /* ========== LOADING OVERLAY ========== */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: rgba(37, 99, 235, 0.9);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ========== KEYBOARD HINT ========== */
+        .kbd {
+            display: inline-block;
+            padding: 2px 6px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: monospace;
+            color: rgba(0, 0, 0, 0.6);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* ========== MODALS ========== */
+        .Modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .Modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .ModalContent {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow: hidden;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .Modal.show .ModalContent {
+            transform: scale(1);
+        }
+
+        .ModalHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .ModalHeader h3 {
+            margin: 0;
+            color: rgba(0, 0, 0, 0.8);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .CloseModalBtn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: rgba(0, 0, 0, 0.6);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+            transition: background 0.2s ease, color 0.2s ease;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .CloseModalBtn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: rgba(0, 0, 0, 0.8);
+        }
+
+        .ModalBody {
+            padding: 24px;
+        }
+
+        /* Forms & Inputs */
+        input[type="number"] {
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: black;
+            outline: none;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            font-size: 14px;
+            font-weight: 400;
+            font-family: inherit;
+            transition: background 0.2s ease, border 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        input[type="number"]:focus {
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(0, 0, 0, 0.25);
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .setting-row:last-child {
+            border-bottom: none;
+        }
+
+        .setting-label {
+            font-weight: 500;
+            color: rgba(0, 0, 0, 0.8);
+        }
+
+        .setting-desc {
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.5);
+            margin-top: 4px;
+        }
+
+        /* Toggle switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .slider {
+            background-color: rgba(37, 99, 235, 0.8);
+            border-color: rgba(37, 99, 235, 1);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .timeline-header {
+                padding: 15px 20px;
+            }
+            .timeline {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .timeline-connector {
+                display: none;
+            }
+            .main-content {
+                padding: 20px;
+            }
+            .preset-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <img class="TreeBackground" src="https://cdn.ecxogames.ca/ecxogames/assets/794037.png">
+    <div id="gridOverlay" class="gridOverlay"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Settings Modal -->
+    <div id="SettingsModal" class="Modal">
+        <div class="ModalContent">
+            <div class="ModalHeader">
+                <h3>Settings</h3>
+                <button onclick="toggleSettingsModal(false)" class="CloseModalBtn">&times;</button>
+            </div>
+            <div class="ModalBody">
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Crop Image</div>
+                        <div class="setting-desc">Crop the image to fit the aspect ratio instead of stretching it.</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="setting-crop" onchange="updateSettings()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Auto Tiles</div>
+                        <div class="setting-desc">Replaces preset selection with rows and columns. Automatically tiles the original image dimensions.</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="setting-auto-tiles" onchange="updateSettings()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="full-container">
+        <div class="app-window">
+            <!-- Timeline Header -->
+        <div class="timeline-header">
+            <div class="timeline-left">
+                <div class="timeline-title">
+                    <span class="material-symbols-outlined">grid_on</span>
+                    Mural Splitter
+                </div>
+                <div class="timeline">
+                    <div class="timeline-step active" id="step-1-btn" onclick="goToStep(1)">
+                        <div class="step-number">1</div>
+                        <span class="step-label">Import</span>
+                    </div>
+                    <div class="timeline-connector" id="connector-1"></div>
+                    <div class="timeline-step disabled" id="step-2-btn" onclick="goToStep(2)">
+                        <div class="step-number">2</div>
+                        <span class="step-label">Configure</span>
+                    </div>
+                    <div class="timeline-connector" id="connector-2"></div>
+                    <div class="timeline-step disabled" id="step-3-btn" onclick="goToStep(3)">
+                        <div class="step-number">3</div>
+                        <span class="step-label">Export</span>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-secondary btn-icon" onclick="toggleSettingsModal(true)">
+                <span class="material-symbols-outlined">settings</span>
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- STEP 1: IMPORT -->
+            <div class="step-content active" id="step-1">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="material-symbols-outlined">upload</span>
+                        Import Image
+                    </h2>
+                    <p class="section-description">Upload your image via file selection, drag &amp; drop, or paste from clipboard <span class="kbd">Ctrl</span>+<span class="kbd">V</span></p>
+                </div>
+
+                <div id="upload-area" class="upload-area">
+                    <span class="material-symbols-outlined upload-icon">cloud_upload</span>
+                    <div class="upload-text">Click or drag &amp; drop image here</div>
+                    <div class="upload-subtext">PNG, JPG, WEBP supported</div>
+                </div>
+
+                <input type="file" id="file-input" accept="image/*" style="display:none;">
+
+                <div style="text-align:center;margin-top:20px;">
+                    <button onclick="document.getElementById('file-input').click()" class="btn btn-primary btn-lg">
+                        <span class="material-symbols-outlined">folder_open</span>
+                        Choose from computer
+                    </button>
+                </div>
+
+                <!-- Image Preview (shown after upload) -->
+                <div id="image-preview-section" style="display:none;margin-top:40px;">
+                    <div class="card">
+                        <div class="image-preview-area">
+                            <div class="preview-image-wrapper">
+                                <img id="original-preview" alt="Original">
+                                <canvas id="grid-overlay" class="grid-overlay-canvas"></canvas>
+                            </div>
+                            <div class="preview-info">
+                                <div class="preview-info-label">Original resolution</div>
+                                <div class="preview-info-value" id="original-dimensions">—</div>
+                                <div class="preview-info-sub" id="file-size-info"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-bar">
+                        <div class="action-bar-left">
+                            <button onclick="resetAll()" class="btn btn-secondary">
+                                <span class="material-symbols-outlined">refresh</span>
+                                Start Over
+                            </button>
+                        </div>
+                        <div class="action-bar-right">
+                            <button onclick="goToStep(2)" class="btn btn-primary btn-lg" id="continue-to-config">
+                                Continue to Configure
+                                <span class="material-symbols-outlined">arrow_forward</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2: CONFIGURE -->
+            <div class="step-content" id="step-2">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="material-symbols-outlined">tune</span>
+                        Configure Tiles
+                    </h2>
+                    <p class="section-description">Choose a preset and configure your tile layout</p>
+                </div>
+
+                <div class="card" id="preset-selection-card">
+                    <div class="card-title">Select Preset</div>
+                    <div class="preset-grid">
+                        <!-- Wall Painting Preset -->
+                        <div class="preset-card selected" id="preset-wall" onclick="selectPreset('wall')">
+                            <div class="preset-card-header">
+                                <div class="preset-card-icon">
+                                    <span class="material-symbols-outlined">panorama</span>
+                                </div>
+                                <div class="preset-card-title">Wall Painting</div>
+                            </div>
+                            <div class="preset-card-desc">Horizontal tiles for wall murals (500×1200px each)</div>
+                            <div class="preset-dropdown">
+                                <label>Number of paintings</label>
+                                <select id="wall-count-select" onchange="updatePresetConfig()">
+                                    <option value="2">2 paintings</option>
+                                    <option value="3" selected>3 paintings</option>
+                                    <option value="4">4 paintings</option>
+                                    <option value="5">5 paintings</option>
+                                    <option value="6">6 paintings</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Square Preset -->
+                        <div class="preset-card" id="preset-square" onclick="selectPreset('square')">
+                            <div class="preset-card-header">
+                                <div class="preset-card-icon">
+                                    <span class="material-symbols-outlined">grid_view</span>
+                                </div>
+                                <div class="preset-card-title">Square Grid</div>
+                            </div>
+                            <div class="preset-card-desc">Square tiles for grid layouts (500×500px each)</div>
+                            <div class="preset-dropdown">
+                                <label>Grid layout</label>
+                                <select id="square-layout-select" onchange="updatePresetConfig()">
+                                    <option value="2x3">2×3 (6 tiles)</option>
+                                    <option value="4x4">4×4 (16 tiles)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Custom Preset -->
+                        <div class="preset-card" id="preset-custom" onclick="selectPreset('custom')">
+                            <div class="preset-card-header">
+                                <div class="preset-card-icon">
+                                    <span class="material-symbols-outlined">aspect_ratio</span>
+                                </div>
+                                <div class="preset-card-title">Custom</div>
+                            </div>
+                            <div class="preset-card-desc">Set your own tile constraints</div>
+                            <div class="preset-dropdown" onclick="event.stopPropagation()">
+                                <div style="display:flex;gap:10px;">
+                                    <div style="flex:1;">
+                                        <label>Tile Width (px)</label>
+                                        <input type="number" id="custom-width" value="500" min="10" oninput="updatePresetConfig()" />
+                                    </div>
+                                    <div style="flex:1;">
+                                        <label>Tile Height (px)</label>
+                                        <input type="number" id="custom-height" value="500" min="10" oninput="updatePresetConfig()" />
+                                    </div>
+                                </div>
+                                <div style="display:flex;gap:10px;">
+                                    <div style="flex:1;">
+                                        <label>Rows</label>
+                                        <input type="number" id="custom-rows" value="1" min="1" max="100" oninput="updatePresetConfig()" />
+                                    </div>
+                                    <div style="flex:1;">
+                                        <label>Columns</label>
+                                        <input type="number" id="custom-cols" value="1" min="1" max="100" oninput="updatePresetConfig()" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Auto Tiles setup -->
+                <div class="card" id="auto-tiles-card" style="display:none;">
+                    <div class="card-title">Auto Tiles Configuration</div>
+                    <p class="section-description" style="margin-bottom:15px;">Calculates the tile resolution based on your rows and columns over the original image size.</p>
+                    <div style="display:flex; gap:20px; max-width: 400px;">
+                        <div style="flex:1;">
+                            <label>Rows</label>
+                            <input type="number" id="auto-rows" value="2" min="1" max="100" oninput="updatePresetConfig()">
+                        </div>
+                        <div style="flex:1;">
+                            <label>Columns</label>
+                            <input type="number" id="auto-cols" value="3" min="1" max="100" oninput="updatePresetConfig()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview with grid overlay -->
+                <div class="card">
+                    <div class="card-title">Preview</div>
+                    <div class="image-preview-area">
+                        <div class="preview-image-wrapper" id="config-preview-wrapper">
+                            <img id="config-preview" alt="Preview" style="max-height:250px;max-width:400px;">
+                            <canvas id="config-grid-overlay" class="grid-overlay-canvas"></canvas>
+                            <div id="crop-handle" class="crop-handle">
+                                <div class="crop-handle-corner tl"></div>
+                                <div class="crop-handle-corner tr"></div>
+                                <div class="crop-handle-corner bl"></div>
+                                <div class="crop-handle-corner br"></div>
+                                <div class="crop-handle-label">Drag to reposition</div>
+                            </div>
+                        </div>
+                        <div class="preview-info">
+                            <div class="preview-info-label">Output resolution</div>
+                            <div class="preview-info-value" id="output-resolution">—</div>
+                            <div class="preview-info-sub" id="tile-info">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <div class="action-bar-left">
+                        <button onclick="goToStep(1)" class="btn btn-secondary">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                            Back
+                        </button>
+                    </div>
+                    <div class="action-bar-right">
+                        <button onclick="generateAndGoToExport()" class="btn btn-primary btn-lg">
+                            Generate Tiles
+                            <span class="material-symbols-outlined">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: EXPORT -->
+            <div class="step-content" id="step-3">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="material-symbols-outlined">download</span>
+                        Export Tiles
+                    </h2>
+                    <p class="section-description">Hover over tiles to copy or download individually</p>
+                </div>
+
+                <div class="export-header">
+                    <div class="export-info" id="export-info">—</div>
+                    <button onclick="downloadAllChunks()" class="btn btn-primary" id="download-all-btn">
+                        <span class="material-symbols-outlined">download</span>
+                        Download All
+                    </button>
+                </div>
+
+                <div class="progress-bar" id="download-progress">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div id="download-status" style="font-size:12px;color:#666;margin-top:8px;display:none;"></div>
+
+                <div class="tiles-container">
+                    <div class="tiles-grid" id="tiles-grid"></div>
+                </div>
+
+                <div class="action-bar">
+                    <div class="action-bar-left">
+                        <button onclick="goToStep(2)" class="btn btn-secondary">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                            Back to Configure
+                        </button>
+                        <button onclick="resetAll()" class="btn btn-secondary">
+                            <span class="material-symbols-outlined">refresh</span>
+                            Start Over
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+        </div>
+    </div>
+
+    <script>
+        // ========== GLOBAL STATE ==========
+        let originalImage = null;
+        let currentChunks = [];
+        let muralId = "";
+        let currentStep = 1;
+        let maxUnlockedStep = 1;
+        let currentPreset = 'wall';
+        
+        let settings = {
+            crop: false,
+            autoTiles: false
+        };
+
+        // Crop: 0=start, 1=end of the slidable range on the constrained axis
+        let cropOffset = { x: 0.5, y: 0.5 };
+        let cropDrag = null;
+
+        // Preset configurations
+        const presetConfigs = {
+            wall: { tileWidth: 500, tileHeight: 1200, rows: 1, cols: 3 },
+            square: { tileWidth: 500, tileHeight: 500, rows: 2, cols: 3 },
+            custom: { tileWidth: 500, tileHeight: 500, rows: 1, cols: 1 }
+        };
+
+        // ========== SETTINGS ==========
+        function toggleSettingsModal(show) {
+            const modal = document.getElementById('SettingsModal');
+            if (show) {
+                document.getElementById('setting-crop').checked = settings.crop;
+                document.getElementById('setting-auto-tiles').checked = settings.autoTiles;
+                modal.classList.add('show');
+            } else {
+                modal.classList.remove('show');
+            }
+        }
+
+        function updateSettings() {
+            settings.crop = document.getElementById('setting-crop').checked;
+            settings.autoTiles = document.getElementById('setting-auto-tiles').checked;
+            
+            document.getElementById('preset-selection-card').style.display = settings.autoTiles ? 'none' : 'block';
+            document.getElementById('auto-tiles-card').style.display = settings.autoTiles ? 'block' : 'none';
+            
+            if (!settings.crop) {
+                cropOffset = { x: 0.5, y: 0.5 };
+            }
+
+            if (originalImage) {
+                updatePresetConfig();
+            }
+        }
+
+        // ========== CROP HANDLE DRAGGING ==========
+        function initCropDragging() {
+            const handle = document.getElementById('crop-handle');
+
+            handle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                const wrapper = document.getElementById('config-preview-wrapper');
+                const wRect = wrapper.getBoundingClientRect();
+                const previewImg = document.getElementById('config-preview');
+                const imgRect = previewImg.getBoundingClientRect();
+
+                const imgLeft = imgRect.left - wRect.left;
+                const imgTop  = imgRect.top  - wRect.top;
+
+                cropDrag = {
+                    startMouseX: e.clientX,
+                    startMouseY: e.clientY,
+                    startLeft:   handle.offsetLeft,
+                    startTop:    handle.offsetTop,
+                    imgLeft, imgTop,
+                    imgW: imgRect.width,
+                    imgH: imgRect.height
+                };
+                handle.style.cursor = 'grabbing';
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!cropDrag) return;
+                const dx = e.clientX - cropDrag.startMouseX;
+                const dy = e.clientY - cropDrag.startMouseY;
+
+                const handleW = handle.offsetWidth;
+                const handleH = handle.offsetHeight;
+
+                const minLeft = cropDrag.imgLeft;
+                const maxLeft = cropDrag.imgLeft + cropDrag.imgW - handleW;
+                const minTop  = cropDrag.imgTop;
+                const maxTop  = cropDrag.imgTop  + cropDrag.imgH - handleH;
+
+                const newLeft = Math.max(minLeft, Math.min(maxLeft, cropDrag.startLeft + dx));
+                const newTop  = Math.max(minTop,  Math.min(maxTop,  cropDrag.startTop  + dy));
+
+                handle.style.left = newLeft + 'px';
+                handle.style.top  = newTop  + 'px';
+
+                const rangeX = maxLeft - minLeft;
+                const rangeY = maxTop  - minTop;
+                cropOffset.x = rangeX > 0 ? (newLeft - minLeft) / rangeX : 0.5;
+                cropOffset.y = rangeY > 0 ? (newTop  - minTop)  / rangeY : 0.5;
+
+                // Redraw canvas mask in real-time
+                const overlay = document.getElementById('config-grid-overlay');
+                const ctx = overlay.getContext('2d');
+                ctx.clearRect(0, 0, overlay.width, overlay.height);
+                const cropX = newLeft - cropDrag.imgLeft;
+                const cropY = newTop  - cropDrag.imgTop;
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.42)';
+                ctx.fillRect(0, 0, overlay.width, cropY);
+                ctx.fillRect(0, cropY + handleH, overlay.width, overlay.height - cropY - handleH);
+                ctx.fillRect(0, cropY, cropX, handleH);
+                ctx.fillRect(cropX + handleW, cropY, overlay.width - cropX - handleW, handleH);
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (cropDrag) {
+                    cropDrag = null;
+                    handle.style.cursor = 'move';
+                }
+            });
+        }
+
+        // ========== TOAST NOTIFICATION SYSTEM ==========
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = { success: 'check_circle', error: 'error', info: 'info' };
+            toast.innerHTML = `
+                <span class="material-symbols-outlined">${icons[type]}</span>
+                <span>${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // ========== LOADING OVERLAY ==========
+        function showLoading(show = true) {
+            document.getElementById('loading-overlay').classList.toggle('active', show);
+        }
+
+        // ========== STEP NAVIGATION ==========
+        function updateTimeline() {
+            for (let i = 1; i <= 3; i++) {
+                const stepBtn = document.getElementById(`step-${i}-btn`);
+                const connector = document.getElementById(`connector-${i}`);
+                
+                stepBtn.classList.remove('active', 'completed', 'disabled');
+                
+                if (i < currentStep) {
+                    stepBtn.classList.add('completed');
+                    if (connector) connector.classList.add('completed');
+                } else if (i === currentStep) {
+                    stepBtn.classList.add('active');
+                    if (connector) connector.classList.remove('completed');
+                } else if (i <= maxUnlockedStep) {
+                    // Accessible but not active
+                    if (connector) connector.classList.remove('completed');
+                } else {
+                    stepBtn.classList.add('disabled');
+                    if (connector) connector.classList.remove('completed');
+                }
+            }
+        }
+
+        function goToStep(step) {
+            if (step > maxUnlockedStep) {
+                showToast('Complete the current step first', 'error');
+                return;
+            }
+            
+            currentStep = step;
+            
+            // Hide all step contents
+            document.querySelectorAll('.step-content').forEach(s => s.classList.remove('active'));
+            document.getElementById(`step-${step}`).classList.add('active');
+            
+            updateTimeline();
+            
+            // Update config preview when going to step 2
+            if (step === 2 && originalImage) {
+                document.getElementById('config-preview').src = originalImage.src;
+                setTimeout(updateConfigPreview, 100);
+            }
+        }
+
+        function unlockStep(step) {
+            if (step > maxUnlockedStep) {
+                maxUnlockedStep = step;
+                updateTimeline();
+            }
+        }
+
+        // ========== PRESET SELECTION ==========
+        function selectPreset(preset) {
+            currentPreset = preset;
+            
+            // Update UI
+            document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById(`preset-${preset}`).classList.add('selected');
+            
+            updatePresetConfig();
+        }
+
+        function updatePresetConfig() {
+            if (settings.autoTiles) {
+                // Auto Tiles overrides preset values. getActivePresetConfig will handle it directly.
+            } else if (currentPreset === 'wall') {
+                const count = parseInt(document.getElementById('wall-count-select').value) || 1;
+                presetConfigs.wall.cols = count;
+                presetConfigs.wall.rows = 1;
+            } else if (currentPreset === 'square') {
+                const layout = document.getElementById('square-layout-select').value;
+                if (layout === '2x3') {
+                    presetConfigs.square.rows = 2;
+                    presetConfigs.square.cols = 3;
+                } else if (layout === '4x4') {
+                    presetConfigs.square.rows = 4;
+                    presetConfigs.square.cols = 4;
+                }
+            } else if (currentPreset === 'custom') {
+                presetConfigs.custom.tileWidth = parseInt(document.getElementById('custom-width').value) || 500;
+                presetConfigs.custom.tileHeight = parseInt(document.getElementById('custom-height').value) || 500;
+                presetConfigs.custom.rows = parseInt(document.getElementById('custom-rows').value) || 1;
+                presetConfigs.custom.cols = parseInt(document.getElementById('custom-cols').value) || 1;
+            }
+            
+            updateConfigPreview();
+        }
+
+        function getActivePresetConfig() {
+            if (settings.autoTiles && originalImage) {
+                const rows = parseInt(document.getElementById('auto-rows').value) || 1;
+                const cols = parseInt(document.getElementById('auto-cols').value) || 1;
+                return {
+                    rows: rows,
+                    cols: cols,
+                    tileWidth: Math.floor(originalImage.width / cols),
+                    tileHeight: Math.floor(originalImage.height / rows),
+                    totalWidth: originalImage.width,
+                    totalHeight: originalImage.height
+                };
+            }
+
+            const config = presetConfigs[currentPreset];
+            const totalWidth = config.tileWidth * config.cols;
+            const totalHeight = config.tileHeight * config.rows;
+            return {
+                rows: config.rows,
+                cols: config.cols,
+                tileWidth: config.tileWidth,
+                tileHeight: config.tileHeight,
+                totalWidth: totalWidth,
+                totalHeight: totalHeight
+            };
+        }
+
+        function updateConfigPreview() {
+            const config = getActivePresetConfig();
+            
+            // Update info text
+            document.getElementById('output-resolution').textContent = `${config.totalWidth} × ${config.totalHeight}px`;
+            document.getElementById('tile-info').textContent = 
+                `${config.rows}×${config.cols} grid (${config.rows * config.cols} tiles) • Each tile: ${config.tileWidth}×${config.tileHeight}px`;
+            
+            // Update grid overlay on config preview
+            const previewImg = document.getElementById('config-preview');
+            const overlay = document.getElementById('config-grid-overlay');
+            const handle = document.getElementById('crop-handle');
+            
+            if (!previewImg || !previewImg.naturalWidth) return;
+            
+            const rect    = previewImg.getBoundingClientRect();
+            const wRect   = document.getElementById('config-preview-wrapper').getBoundingClientRect();
+            const imgLeft = rect.left - wRect.left;
+            const imgTop  = rect.top  - wRect.top;
+
+            overlay.width  = rect.width;
+            overlay.height = rect.height;
+            overlay.style.width  = rect.width  + 'px';
+            overlay.style.height = rect.height + 'px';
+            overlay.style.left   = imgLeft + 'px';
+            overlay.style.top    = imgTop  + 'px';
+
+            // ---- Crop handle ----
+            if (settings.crop && originalImage) {
+                const imgRatio    = originalImage.width / originalImage.height;
+                const targetRatio = config.totalWidth  / config.totalHeight;
+                const scale       = rect.width / originalImage.width;
+
+                let handleW, handleH, minLeft, minTop, maxLeft, maxTop;
+
+                if (imgRatio > targetRatio) {
+                    // Image wider → crop horizontally only
+                    const sWidth = originalImage.height * targetRatio;
+                    handleW = sWidth * scale;
+                    handleH = rect.height;
+                    minLeft = imgLeft;       maxLeft = imgLeft + rect.width - handleW;
+                    minTop  = imgTop;        maxTop  = imgTop;
+                } else {
+                    // Image taller → crop vertically only
+                    const sHeight = originalImage.width / targetRatio;
+                    handleW = rect.width;
+                    handleH = sHeight * scale;
+                    minLeft = imgLeft;       maxLeft = imgLeft;
+                    minTop  = imgTop;        maxTop  = imgTop + rect.height - handleH;
+                }
+
+                const handleLeft = minLeft + (maxLeft - minLeft) * cropOffset.x;
+                const handleTop  = minTop  + (maxTop  - minTop)  * cropOffset.y;
+
+                handle.style.display = 'block';
+                handle.style.width   = handleW   + 'px';
+                handle.style.height  = handleH   + 'px';
+                handle.style.left    = handleLeft + 'px';
+                handle.style.top     = handleTop  + 'px';
+            } else {
+                handle.style.display = 'none';
+            }
+            
+            const ctx = overlay.getContext('2d');
+            ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+            // Only draw grid lines in non-crop mode (in crop mode the handle IS the guide)
+            if (!settings.crop) {
+                ctx.strokeStyle = 'rgba(100, 150, 255, 0.9)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                
+                // Draw vertical lines
+                for (let c = 1; c < config.cols; c++) {
+                    const x = (overlay.width / config.cols) * c;
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, overlay.height);
+                    ctx.stroke();
+                }
+                
+                // Draw horizontal lines
+                for (let r = 1; r < config.rows; r++) {
+                    const y = (overlay.height / config.rows) * r;
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(overlay.width, y);
+                    ctx.stroke();
+                }
+            } else if (handle.style.display !== 'none') {
+                // Draw dark mask outside the crop handle using canvas
+                const cropX = handle.offsetLeft - imgLeft;
+                const cropY = handle.offsetTop  - imgTop;
+                const cropW = handle.offsetWidth;
+                const cropH = handle.offsetHeight;
+
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.42)';
+                // Top
+                ctx.fillRect(0, 0, overlay.width, cropY);
+                // Bottom
+                ctx.fillRect(0, cropY + cropH, overlay.width, overlay.height - cropY - cropH);
+                // Left
+                ctx.fillRect(0, cropY, cropX, cropH);
+                // Right
+                ctx.fillRect(cropX + cropW, cropY, overlay.width - cropX - cropW, cropH);
+            }
+        }
+
+        // ========== IMAGE LOADING ==========
+        function loadImage(src) {
+            showLoading(true);
+            
+            const img = new Image();
+            img.onload = () => {
+                originalImage = img;
+                
+                // Update step 1 preview
+                const previewImg = document.getElementById('original-preview');
+                previewImg.src = src;
+                document.getElementById('original-dimensions').textContent = `${img.width} × ${img.height}`;
+                document.getElementById('image-preview-section').style.display = 'block';
+                
+                // Unlock step 2
+                unlockStep(2);
+                
+                showLoading(false);
+                showToast('Image loaded successfully!', 'success');
+            };
+            
+            img.onerror = () => {
+                showLoading(false);
+                showToast('Failed to load image', 'error');
+            };
+            
+            img.src = src;
+        }
+
+        // ========== FILE UPLOAD HANDLERS ==========
+        document.getElementById('file-input').addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                const url = URL.createObjectURL(e.target.files[0]);
+                loadImage(url);
+            }
+        });
+
+        const uploadArea = document.getElementById('upload-area');
+        
+        uploadArea.addEventListener('click', () => {
+            document.getElementById('file-input').click();
+        });
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const url = URL.createObjectURL(file);
+                loadImage(url);
+            }
+        });
+
+        // Clipboard paste support
+        document.addEventListener('paste', (e) => {
+            const items = e.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    const blob = items[i].getAsFile();
+                    const url = URL.createObjectURL(blob);
+                    loadImage(url);
+                    return;
+                }
+            }
+        });
+
+        // ========== TILE GENERATION ==========
+        function generateAndGoToExport() {
+            if (!originalImage) {
+                showToast('Please upload an image first', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            
+            setTimeout(() => {
+                try {
+                    const config = getActivePresetConfig();
+                    
+                    // Create resized full canvas
+                    const resizedCanvas = document.createElement('canvas');
+                    resizedCanvas.width = config.totalWidth;
+                    resizedCanvas.height = config.totalHeight;
+                    const ctx = resizedCanvas.getContext('2d');
+                    
+                    if (settings.crop) {
+                        const imgRatio = originalImage.width / originalImage.height;
+                        const targetRatio = config.totalWidth / config.totalHeight;
+                        let sWidth = originalImage.width;
+                        let sHeight = originalImage.height;
+                        let sx = 0, sy = 0;
+
+                        if (imgRatio > targetRatio) {
+                            sWidth = originalImage.height * targetRatio;
+                            sx = (originalImage.width - sWidth) * cropOffset.x;
+                        } else {
+                            sHeight = originalImage.width / targetRatio;
+                            sy = (originalImage.height - sHeight) * cropOffset.y;
+                        }
+
+                        ctx.drawImage(originalImage, sx, sy, sWidth, sHeight, 0, 0, config.totalWidth, config.totalHeight);
+                    } else {
+                        ctx.drawImage(originalImage, 0, 0, config.totalWidth, config.totalHeight);
+                    }
+                    
+                    // Generate random 6-digit ID
+                    muralId = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+                    
+                    // Clear previous chunks
+                    currentChunks = [];
+                    const tilesGrid = document.getElementById('tiles-grid');
+                    tilesGrid.innerHTML = '';
+                    tilesGrid.style.gridTemplateColumns = `repeat(${config.cols}, 1fr)`;
+                    
+                    for (let r = 0; r < config.rows; r++) {
+                        for (let c = 0; c < config.cols; c++) {
+                            // Full resolution chunk canvas
+                            const chunkCanvas = document.createElement('canvas');
+                            chunkCanvas.width = config.tileWidth;
+                            chunkCanvas.height = config.tileHeight;
+                            const chunkCtx = chunkCanvas.getContext('2d');
+                            chunkCtx.drawImage(
+                                resizedCanvas,
+                                c * config.tileWidth, r * config.tileHeight,
+                                config.tileWidth, config.tileHeight,
+                                0, 0,
+                                config.tileWidth, config.tileHeight
+                            );
+                            
+                            const pos = `${r + 1}${c + 1}`;
+                            const filename = `${muralId}_${pos}.png`;
+                            
+                            currentChunks.push({
+                                canvas: chunkCanvas,
+                                filename: filename,
+                                row: r + 1,
+                                col: c + 1
+                            });
+                            
+                            const chunkIndex = currentChunks.length - 1;
+                            
+                            // Create tile cell for seamless grid
+                            const tileCell = document.createElement('div');
+                            tileCell.className = 'tile-cell';
+                            
+                            // Preview canvas (smaller for display)
+                            const previewCanvas = document.createElement('canvas');
+                            const maxPreviewSize = 200;
+                            const scale = Math.min(maxPreviewSize / config.tileWidth, maxPreviewSize / config.tileHeight, 1);
+                            previewCanvas.width = Math.floor(config.tileWidth * scale);
+                            previewCanvas.height = Math.floor(config.tileHeight * scale);
+                            const pCtx = previewCanvas.getContext('2d');
+                            pCtx.drawImage(chunkCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+                            
+                            tileCell.appendChild(previewCanvas);
+                            
+                            // Hover overlay with actions
+                            const overlay = document.createElement('div');
+                            overlay.className = 'tile-overlay';
+                            overlay.innerHTML = `
+                                <div class="tile-label">${pos} — ${config.tileWidth}×${config.tileHeight}px</div>
+                                <div class="tile-actions">
+                                    <button class="tile-btn" onclick="downloadSingleChunk(${chunkIndex})">
+                                        <span class="material-symbols-outlined">download</span>
+                                        Save
+                                    </button>
+                                    <button class="tile-btn" onclick="copyChunkToClipboard(${chunkIndex})">
+                                        <span class="material-symbols-outlined">content_copy</span>
+                                        Copy
+                                    </button>
+                                </div>
+                            `;
+                            tileCell.appendChild(overlay);
+                            
+                            tilesGrid.appendChild(tileCell);
+                        }
+                    }
+                    
+                    // Update export info
+                    document.getElementById('export-info').innerHTML = `
+                        <strong>${config.rows}×${config.cols}</strong> tiles • 
+                        <strong>${config.totalWidth}×${config.totalHeight}px</strong> total • 
+                        ID: <strong>${muralId}</strong>
+                    `;
+                    
+                    unlockStep(3);
+                    goToStep(3);
+                    
+                    showLoading(false);
+                    showToast(`Generated ${config.rows * config.cols} tiles!`, 'success');
+                    
+                } catch (error) {
+                    showLoading(false);
+                    showToast('Error generating tiles: ' + error.message, 'error');
+                }
+            }, 50);
+        }
+
+        // ========== COPY TO CLIPBOARD ==========
+        async function copyChunkToClipboard(index) {
+            if (index < 0 || index >= currentChunks.length) return;
+            
+            try {
+                const chunk = currentChunks[index];
+                const blob = await new Promise(resolve => chunk.canvas.toBlob(resolve, 'image/png'));
+                
+                await navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                ]);
+                
+                showToast(`Copied tile ${chunk.row}${chunk.col} to clipboard`, 'success');
+            } catch (error) {
+                showToast('Failed to copy: ' + error.message, 'error');
+            }
+        }
+
+        // ========== DOWNLOAD FUNCTIONS ==========
+        function downloadSingleChunk(index) {
+            if (index < 0 || index >= currentChunks.length) return;
+            const chunk = currentChunks[index];
+            const link = document.createElement('a');
+            link.download = chunk.filename;
+            link.href = chunk.canvas.toDataURL('image/png');
+            link.click();
+            showToast(`Downloaded ${chunk.filename}`, 'success');
+        }
+
+        function downloadAllChunks() {
+            if (currentChunks.length === 0) return;
+            
+            const progressBar = document.getElementById('download-progress');
+            const progressFill = document.getElementById('progress-fill');
+            const statusEl = document.getElementById('download-status');
+            
+            progressBar.classList.add('active');
+            statusEl.style.display = 'block';
+            progressFill.style.width = '0%';
+            
+            let downloaded = 0;
+            const total = currentChunks.length;
+            
+            currentChunks.forEach((chunk, i) => {
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.download = chunk.filename;
+                    link.href = chunk.canvas.toDataURL('image/png');
+                    link.click();
+                    
+                    downloaded++;
+                    const percent = Math.round((downloaded / total) * 100);
+                    progressFill.style.width = percent + '%';
+                    statusEl.textContent = `Downloading ${downloaded} of ${total}...`;
+                    
+                    if (downloaded === total) {
+                        setTimeout(() => {
+                            progressBar.classList.remove('active');
+                            statusEl.style.display = 'none';
+                            showToast(`Downloaded all ${total} tiles!`, 'success');
+                        }, 500);
+                    }
+                }, i * 150);
+            });
+        }
+
+        // ========== RESET ==========
+        function resetAll() {
+            originalImage = null;
+            currentChunks = [];
+            muralId = "";
+            currentStep = 1;
+            maxUnlockedStep = 1;
+            
+            document.getElementById('image-preview-section').style.display = 'none';
+            document.getElementById('file-input').value = '';
+            document.getElementById('tiles-grid').innerHTML = '';
+            
+            goToStep(1);
+            showToast('Reset complete', 'info');
+        }
+
+        // ========== WINDOW RESIZE HANDLER ==========
+        window.addEventListener('resize', () => {
+            if (currentStep === 2 && originalImage) {
+                setTimeout(updateConfigPreview, 100);
+            }
+        });
+
+        // ========== INITIALIZATION ==========
+        window.onload = () => {
+            updateTimeline();
+            initCropDragging();
+            console.log('%cMural Splitter ready. Paste images with Ctrl+V anytime!', 'color:#666;font-size:12px');
+        };
+    </script>
+</body>
+</html>

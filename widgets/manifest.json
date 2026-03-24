@@ -1,0 +1,25 @@
+[
+    {
+        "name": "Techtoby",
+        "type": "default",
+        "app": "os",
+        "sizes": [
+            { "rows": 1, "columns": 1 },
+            { "rows": 2, "columns": 2 },
+            { "rows": 3, "columns": 3 }
+        ],
+        "defaultSize": { "rows": 1, "columns": 2 },
+        "path": "widgets/techtoby/default.html"
+    },
+    {
+        "name": "Clock",
+        "type": "default",
+        "app": "os",
+        "sizes": [
+            { "rows": 1, "columns": 2 },
+            { "rows": 2, "columns": 2 }
+        ],
+        "defaultSize": { "rows": 1, "columns": 2 },
+        "path": "widgets/clock/default.html"
+    }
+]
