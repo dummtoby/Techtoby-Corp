@@ -8,6 +8,7 @@
     "apps": [
         {
             "name": "bbcomputer",
+            "long_name": "Bloxburg Computer Decal Designer",
             "version": "1.0",
             "description": "Design nice computer desktop decals for your Bloxburg builds!",
             "author": "dummtoby",
@@ -16,16 +17,18 @@
         },
         {
             "name": "bbfamtree",
+            "long_name": "Bloxburg Family Tree Generator",
             "version": "1.0",
-            "description": "Design a family tree for your Bloxburg builds!",
+            "description": "Generate a family tree for your Bloxburg builds!",
             "author": "dummtoby",
             "path": "bbfamtree/",
             "icon": "https://cdn.shawnyxx.dev/assets/655910.png"
         },
         {
             "name": "bbmural",
+            "long_name": "Bloxburg Mural Generator",
             "version": "1.0",
-            "description": "Design a mural for your Bloxburg builds!",
+            "description": "Generate a mural for your Bloxburg builds!",
             "author": "dummtoby",
             "path": "bbmural/",
             "icon": "https://cdn.shawnyxx.dev/icons/158450.png"

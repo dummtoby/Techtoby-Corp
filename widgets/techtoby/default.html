@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Techtoby Widget</title>
     <style>
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -12,14 +18,21 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            color: #000;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+            color: #111;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            
+            /* Animated gradient background */
+            background: linear-gradient(-45deg, rgba(238,119,82,0.3), rgba(231,60,126,0.3), rgba(35,166,213,0.3), rgba(35,213,171,0.3));
+            background-size: 300% 300%;
+            animation: gradientMove 12s ease infinite;
+
+            /* Glass effect */
+            backdrop-filter: blur(25px) saturate(1.8);
+            -webkit-backdrop-filter: blur(25px) saturate(1.8);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.7);
+            
+            border-radius: 18px; /* Matches widget wrapper */
             overflow: hidden;
             box-sizing: border-box;
         }
@@ -27,21 +40,29 @@
         .widget-content {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            padding: 1rem;
+            gap: 1.25rem;
+            padding: 1.25rem;
             width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.45); /* Inner white tint */
         }
 
         .profile-pic {
-            width: 48px;
-            height: 48px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
             overflow: hidden;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.8);
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15), 0 0 0 2px rgba(255,255,255,0.8);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .widget-content:hover .profile-pic {
+            transform: scale(1.08) rotate(-5deg);
         }
 
         .profile-pic img {
@@ -54,24 +75,30 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            justify-content: center;
         }
 
         .title {
-            font-weight: bold;
-            font-size: 1.1rem;
-            letter-spacing: 0.5px;
+            font-weight: 800;
+            font-size: 1.15rem;
+            letter-spacing: -0.02em;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            color: #1a1a1a;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
         }
 
         .subtitle {
-            font-size: 0.8rem;
-            opacity: 0.8;
+            font-size: 0.85rem;
+            font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            color: #444;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 2px;
         }
     </style>
 </head>

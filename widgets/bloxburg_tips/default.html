@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bloxburg Tips</title>
     <style>
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-3px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -13,44 +19,65 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            border-radius: 16px;
+            
+            background: linear-gradient(135deg, rgba(253, 230, 138, 0.6), rgba(254, 243, 199, 0.3));
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 18px;
             box-sizing: border-box;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(25px) saturate(1.5);
+            -webkit-backdrop-filter: blur(25px) saturate(1.5);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(255,255,255,0.7);
+            
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             overflow: hidden;
             flex-direction: column;
             text-align: center;
-            padding: 10px;
+            padding: 18px;
+            position: relative;
         }
 
-        h3 {
-            margin: 0 0 5px 0;
-            font-size: 16px;
-            color: #000;
-        }
-
-        .tip-content {
-            font-size: 13px;
-            color: #000;
-            font-weight: 500;
-            opacity: 0.8;
-            max-width: 90%;
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.4);
+            padding: 4px 12px;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         .emoji {
-            font-size: 24px;
-            margin-bottom: 5px;
+            font-size: 18px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        h3 {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 700;
+            color: #b45309; /* Warm amber/brown */
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tip-content {
+            font-size: 15px;
+            color: #451a03;
+            font-weight: 600;
+            line-height: 1.4;
+            max-width: 95%;
+            text-shadow: 0 1px 1px rgba(255,255,255,0.8);
         }
     </style>
 </head>
 <body>
-    <div class="emoji">💡</div>
-    <h3>Bloxburg Tip</h3>
-    <div class="tip-content" id="tipText">Press 'C' to clone items quickly in Build Mode!</div>
+    <div class="header">
+        <div class="emoji">💡</div>
+        <h3>Daily Tip</h3>
+    </div>
+    <div class="tip-content" id="tipText">Loading tip...</div>
+
     <script>
         const tips = [
             "Press 'C' to clone items quickly in Build Mode!",
@@ -59,7 +86,21 @@
             "Use custom decals to make fake windows with outside views.",
             "Basements cost more! Try placing items on the lowest plot level first."
         ];
-        document.getElementById('tipText').innerText = tips[Math.floor(Math.random() * tips.length)];
+        
+        function randomizeTip() {
+            const tipEl = document.getElementById('tipText');
+            tipEl.style.opacity = '0';
+            setTimeout(() => {
+                tipEl.innerText = tips[Math.floor(Math.random() * tips.length)];
+                tipEl.style.opacity = '1';
+                tipEl.style.transition = 'opacity 0.3s ease';
+            }, 100);
+        }
+
+        randomizeTip();
+        
+        // Change tip when tapping anywhere on widget
+        document.body.addEventListener('click', randomizeTip);
     </script>
 </body>
 </html>
