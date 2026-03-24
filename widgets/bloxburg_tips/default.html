@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloxburg Tips</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 16px;
+            box-sizing: border-box;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            flex-direction: column;
+            text-align: center;
+            padding: 10px;
+        }
+
+        h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            color: #000;
+        }
+
+        .tip-content {
+            font-size: 13px;
+            color: #000;
+            font-weight: 500;
+            opacity: 0.8;
+            max-width: 90%;
+        }
+
+        .emoji {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="emoji">💡</div>
+    <h3>Bloxburg Tip</h3>
+    <div class="tip-content" id="tipText">Press 'C' to clone items quickly in Build Mode!</div>
+    <script>
+        const tips = [
+            "Press 'C' to clone items quickly in Build Mode!",
+            "Place floors manually instead of automatic to save money.",
+            "Always boost your moods before working at Pizza Planet.",
+            "Use custom decals to make fake windows with outside views.",
+            "Basements cost more! Try placing items on the lowest plot level first."
+        ];
+        document.getElementById('tipText').innerText = tips[Math.floor(Math.random() * tips.length)];
+    </script>
+</body>
+</html>

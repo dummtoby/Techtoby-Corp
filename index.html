@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Techtoby Corp - Desktop</title>
+    <link rel="shortcut icon" href="media/100002.png" type="image/png">
     <style>
         :root {
             --glass-bg: rgba(255, 255, 255, 0.15);
@@ -113,7 +114,7 @@
         .credits {
             position: absolute;
             bottom: 20px;
-            right: 20px;
+            left: 20px;
             background: var(--glass-bg);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -132,6 +133,22 @@
         
         .credits a:hover {
             text-decoration: underline;
+        }
+
+        .bloxburg-logo {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 180px;
+            z-index: 5;
+            pointer-events: none;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+
+        .bloxburg-logo:hover {
+            transform: scale(1.05);
         }
 
         /* Context Menu */
@@ -263,20 +280,19 @@
         /* Customization Mode */
         .customize-banner {
             display: none;
-            position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            width: 100vw;   
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
             color: #000;
             text-align: center;
-            padding: 10px;
+            padding: 12px;
             z-index: 2000;
             font-weight: bold;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.6);
         }
 
         body.customizing .customize-banner {
@@ -284,6 +300,27 @@
             justify-content: center;
             align-items: center;
             gap: 15px;
+        }
+
+        .gridOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 0.25s ease-out;
+            background-image:
+              radial-gradient(circle, rgba(99, 102, 241, 0.4) 1.5px, transparent 1.5px),
+              radial-gradient(circle, rgba(99, 102, 241, 0.15) 1px, transparent 1px);
+            background-size: 20px 20px, 100px 100px;
+            background-position: 0 0, 0 0;
+            pointer-events: none;
+        }
+
+        body.customizing .gridOverlay {
+            opacity: 1;
         }
 
         body.customizing .desktop-item {
@@ -308,55 +345,46 @@
         }
 
         .done-btn {
-            background: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            border: none;
-            padding: 5px 15px;
+            background: rgba(255, 255, 255, 0.4);
+            color: #000;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 6px 16px;
             border-radius: 12px;
             cursor: pointer;
             font-weight: bold;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .done-btn:hover {
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(1.05);
         }
     </style>
 </head>
 <body>
+    <div class="gridOverlay"></div>
     <div class="customize-banner">
         Customizing Home Screen... Drag items to rearrange.
         <button class="done-btn" id="doneCustomizeBtn">Done</button>
     </div>
     <!-- Desktop Area -->
     <div class="desktop" id="desktop">
-        
-        <a href="bbcomputer" class="app-icon desktop-item" title="Design nice computer desktop decals for your Bloxburg builds!" draggable="true">
-            <div class="icon-img">
-                💻
-            </div>
-            <div class="app-name">bbcomputer</div>
-        </a>
-
-        <a href="bbfamtree" class="app-icon desktop-item" title="Design a family tree for your Bloxburg builds!" draggable="true">
-            <div class="icon-img">
-                <img src="https://cdn.shawnyxx.dev/assets/655910.png" alt="Tree Icon" onerror="this.style.display='none'; this.parentNode.innerHTML='🌳'">
-            </div>
-            <div class="app-name">bbfamtree</div>
-        </a>
-
-        <a href="bbmural" class="app-icon desktop-item" title="Design a mural for your Bloxburg builds!" draggable="true">
-            <div class="icon-img">
-                <img src="https://cdn.shawnyxx.dev/icons/158450.png" alt="Mural Icon" onerror="this.style.display='none'; this.parentNode.innerHTML='🎨'">
-            </div>
-            <div class="app-name">bbmural</div>
-        </a>
-
         <!-- Selection box element -->
         <div class="selection-box" id="selection-box"></div>
     </div>
 
     <!-- Context Menu -->
     <div id="desktopContextMenu" class="ContextMenu">
-        <button id="hideAppsBtn">Hide Selected Apps</button>
-        <button id="viewHiddenAppsBtn">View Hidden Apps</button>
         <button id="addWidgetsBtn">Add Widgets</button>
         <button id="customizeHomeBtn">Customize Home Screen</button>
+        <button id="settingsBtn">Settings</button>
+    </div>
+
+    <!-- Widget Context Menu -->
+    <div id="widgetContextMenu" class="ContextMenu">
+        <button id="removeWidgetBtn" style="color: #dc2626;">Remove Widget</button>
     </div>
 
     <!-- Reusable Modal Layout -->
@@ -375,51 +403,195 @@
     <div class="credits">
         Designed by <a href="https://www.youtube.com/channel/@dummtoby" target="_blank">dummtoby</a>
     </div>
+    <a href="https://www.roblox.com/games/185655149/" target="_blank">
+        <img src="media/100002.png" alt="Welcome to Bloxburg" class="bloxburg-logo" style="pointer-events: auto; cursor: pointer; transition: transform 0.2s;">
+    </a>
 
     <script>
         // Load Widgets
         async function loadWidgets() {
             try {
                 const response = await fetch('widgets/manifest.json');
-                const widgets = await response.json();
+                const availableWidgets = await response.json();
+                
+                // Store globally for add-menu usage
+                window.availableWidgets = availableWidgets;
+                
+                let savedWidgets = JSON.parse(localStorage.getItem('installedWidgets'));
+                
+                if (!savedWidgets) {
+                    savedWidgets = availableWidgets.filter(w => w.preinstalled).map(w => w.id);
+                    localStorage.setItem('installedWidgets', JSON.stringify(savedWidgets));
+                }
+
+                // Filter to only those installed
+                const widgetsToLoad = availableWidgets.filter(w => savedWidgets.includes(w.id));
                 
                 const desktopElement = document.getElementById('desktop');
                 
-                widgets.forEach(widget => {
-                    const widgetContainer = document.createElement('div');
-                    widgetContainer.style.gridColumn = `span ${widget.defaultSize.columns}`;
-                    widgetContainer.style.gridRow = `span ${widget.defaultSize.rows}`;
-                    widgetContainer.style.position = 'relative';
-                    widgetContainer.style.zIndex = '2';
-                    widgetContainer.className = 'desktop-item';
-                    widgetContainer.setAttribute('draggable', 'true');
-                    
-                    const iframe = document.createElement('iframe');
-                    iframe.src = widget.path;
-                    iframe.className = 'widget-iframe';
-                    iframe.title = widget.name;
-                    
-                    widgetContainer.appendChild(iframe);
-                    
-                    // Insert before the first app icon so widgets appear first
-                    const firstApp = desktopElement.querySelector('.app-icon');
-                    if (firstApp) {
-                        desktopElement.insertBefore(widgetContainer, firstApp);
-                    } else {
-                        desktopElement.appendChild(widgetContainer);
-                    }
+                widgetsToLoad.forEach(widget => {
+                    renderWidgetNode(widget, desktopElement);
                 });
             } catch (error) {
                 console.error("Error loading widgets:", error);
             }
         }
 
-        loadWidgets();
+        function renderWidgetNode(widget, desktopElement) {
+            const widgetContainer = document.createElement('div');
+            // Check for saved position
+            const savedPos = JSON.parse(localStorage.getItem('itemPositions')) || {};
+            const pos = savedPos[widget.id];
+            
+            if (localStorage.getItem('placeAnywhere') === 'true' && pos) {
+                widgetContainer.style.gridColumn = `${pos.col} / span ${widget.defaultSize.columns}`;
+                widgetContainer.style.gridRow = `${pos.row} / span ${widget.defaultSize.rows}`;
+            } else {
+                widgetContainer.style.gridColumn = `span ${widget.defaultSize.columns}`;
+                widgetContainer.style.gridRow = `span ${widget.defaultSize.rows}`;
+            }
+            
+            // Save original span sizes for later use
+            widgetContainer.dataset.spanCols = widget.defaultSize.columns;
+            widgetContainer.dataset.spanRows = widget.defaultSize.rows;
+
+            widgetContainer.style.position = 'relative';
+            widgetContainer.style.zIndex = '2';
+            widgetContainer.className = 'desktop-item widget-container';
+            widgetContainer.setAttribute('draggable', 'true');
+            widgetContainer.dataset.widgetId = widget.id;
+            
+            const iframe = document.createElement('iframe');
+            iframe.src = widget.path;
+            iframe.className = 'widget-iframe';
+            iframe.title = widget.name;
+            
+            iframe.onload = () => {
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    iframeDoc.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        
+                        // Forward right-click pos relative to desktop
+                        const rect = iframe.getBoundingClientRect();
+                        const mouseX = rect.left + e.clientX;
+                        const mouseY = rect.top + e.clientY;
+                        
+                        // Show widget context menu directly
+                        selectedWidgetForRemoval = widgetContainer;
+                        document.getElementById('desktopContextMenu').style.display = 'none';
+                        document.getElementById('widgetContextMenu').style.display = 'block';
+                        document.getElementById('widgetContextMenu').style.left = `${mouseX}px`;
+                        document.getElementById('widgetContextMenu').style.top = `${mouseY}px`;
+                    });
+                    
+                    iframeDoc.addEventListener('click', (e) => {
+                        if (e.button === 0) {
+                            document.getElementById('desktopContextMenu').style.display = 'none';
+                            document.getElementById('widgetContextMenu').style.display = 'none';
+                        }
+                    });
+                } catch (err) {
+                    console.warn('Cross-origin frame context menu protection prevented binding.', err);
+                }
+            };
+
+            widgetContainer.appendChild(iframe);
+            
+            // Insert before the first app icon so widgets appear first
+            const firstApp = desktopElement.querySelector('.app-icon');
+            if (firstApp) {
+                desktopElement.insertBefore(widgetContainer, firstApp);
+            } else {
+                desktopElement.appendChild(widgetContainer);
+            }
+        }
+
+        // Load Apps dynamically from manifest.json
+        async function loadApps() {
+            try {
+                const response = await fetch('manifest.json');
+                const data = await response.json();
+                const desktopElement = document.getElementById('desktop');
+                const selectionBox = document.getElementById('selection-box');
+                
+                data.apps.forEach(app => {
+                    const a = document.createElement('a');
+                    a.href = app.path;
+                    a.className = 'app-icon desktop-item';
+                    a.title = app.description;
+                    a.draggable = true;
+                    a.dataset.appId = app.name;
+                    a.dataset.spanCols = 1;
+                    a.dataset.spanRows = 1;
+
+                    // Check for saved position
+                    const savedPos = JSON.parse(localStorage.getItem('itemPositions')) || {};
+                    const pos = savedPos[app.name];
+                    
+                    if (localStorage.getItem('placeAnywhere') === 'true' && pos) {
+                        a.style.gridColumn = `${pos.col} / span 1`;
+                        a.style.gridRow = `${pos.row} / span 1`;
+                    }
+
+                    const iconImg = document.createElement('div');
+                    iconImg.className = 'icon-img';
+                    
+                    if (app.icon) {
+                        const img = document.createElement('img');
+                        img.src = app.icon;
+                        img.alt = app.name + ' Icon';
+                        img.onerror = function() {
+                            this.style.display = 'none';
+                            this.parentNode.innerHTML = '📦';
+                        };
+                        iconImg.appendChild(img);
+                    } else {
+                        // Fallback emoji
+                        iconImg.textContent = app.name === 'bbcomputer' ? '💻' : '📦';
+                    }
+                    
+                    const appName = document.createElement('div');
+                    appName.className = 'app-name';
+                    appName.textContent = app.name;
+                    
+                    a.appendChild(iconImg);
+                    a.appendChild(appName);
+                    
+                    a.addEventListener('click', (e) => {
+                        // If customizing, prevent link navigation
+                        if (document.body.classList.contains('customizing')) {
+                            e.preventDefault();
+                        }
+                        
+                        const allIcons = document.querySelectorAll('.app-icon');
+                        allIcons.forEach(i => i.classList.remove('selected'));
+                        a.classList.add('selected');
+                    });
+                    
+                    desktopElement.insertBefore(a, selectionBox);
+                });
+            } catch (error) {
+                console.error("Error loading apps:", error);
+            }
+        }
+
+        // Context Menu Logic
+        const contextMenu = document.getElementById('desktopContextMenu');
+        const widgetContextMenu = document.getElementById('widgetContextMenu');
+        let selectedWidgetForRemoval = null;
+
+        // Initialize desktop components asynchronously
+        async function initDesktop() {
+            await loadApps();
+            await loadWidgets();
+        }
+
+        initDesktop();
 
         // Rectangle Selection Logic
         const desktop = document.querySelector('.desktop');
         const selectionBox = document.getElementById('selection-box');
-        const icons = document.querySelectorAll('.app-icon');
         
         let isSelecting = false;
         let startX = 0;
@@ -428,7 +600,7 @@
         // Start drawing the box
         desktop.addEventListener('mousedown', (e) => {
             // Check if we are clicking on an icon or its descendant directly
-            if (e.target.closest('.app-icon')) {
+            if (e.target.closest('.app-icon') || document.body.classList.contains('customizing')) {
                 return;
             }
 
@@ -449,7 +621,7 @@
             selectionBox.style.display = 'block';
 
             // Clear previously selected
-            icons.forEach(app => app.classList.remove('selected'));
+            document.querySelectorAll('.app-icon').forEach(app => app.classList.remove('selected'));
         });
 
         // Update box size while mouse moves
@@ -472,7 +644,7 @@
             // Check intersections
             const boxRect = selectionBox.getBoundingClientRect();
             
-            icons.forEach(app => {
+            document.querySelectorAll('.app-icon:not(.hidden-app)').forEach(app => {
                 const appRect = app.getBoundingClientRect();
                 
                 // Check overlap
@@ -498,31 +670,53 @@
             selectionBox.style.display = 'none';
         });
 
-        // Additionally click functionality to select single icon / open icon
-        icons.forEach(icon => {
-            icon.addEventListener('click', (e) => {
-                // If it's a link, we let it navigate naturally
-                // Remove selection from all others to simulate standard OS behaviour
-                icons.forEach(app => app.classList.remove('selected'));
-                icon.classList.add('selected');
-            });
-        });
-
         // Context Menu Logic
-        const contextMenu = document.getElementById('desktopContextMenu');
         
         desktop.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             const { clientX: mouseX, clientY: mouseY } = e;
             
-            contextMenu.style.display = 'block';
-            contextMenu.style.left = `${mouseX}px`;
-            contextMenu.style.top = `${mouseY}px`;
+            // Check if right clicking on a widget
+            const widget = e.target.closest('div.desktop-item:not(a)');
+            
+            if (widget) {
+                // Show widget context menu
+                selectedWidgetForRemoval = widget;
+                desktopContextMenu.style.display = 'none';
+                widgetContextMenu.style.display = 'block';
+                widgetContextMenu.style.left = `${mouseX}px`;
+                widgetContextMenu.style.top = `${mouseY}px`;
+            } else if (!e.target.closest('.app-icon')) {
+                // Show standard desktop context menu
+                widgetContextMenu.style.display = 'none';
+                contextMenu.style.display = 'block';
+                contextMenu.style.left = `${mouseX}px`;
+                contextMenu.style.top = `${mouseY}px`;
+            } else {
+                widgetContextMenu.style.display = 'none';
+                contextMenu.style.display = 'none';
+            }
         });
 
         document.addEventListener('click', (e) => {
             if (e.button === 0) {
                 contextMenu.style.display = 'none';
+                widgetContextMenu.style.display = 'none';
+            }
+        });
+
+        document.getElementById('removeWidgetBtn').addEventListener('click', () => {
+            if (selectedWidgetForRemoval) {
+                const widgetId = selectedWidgetForRemoval.dataset.widgetId;
+                selectedWidgetForRemoval.remove();
+                selectedWidgetForRemoval = null;
+                
+                // Update local storage
+                if (widgetId) {
+                    let savedWidgets = JSON.parse(localStorage.getItem('installedWidgets')) || [];
+                    savedWidgets = savedWidgets.filter(id => id !== widgetId);
+                    localStorage.setItem('installedWidgets', JSON.stringify(savedWidgets));
+                }
             }
         });
 
@@ -537,6 +731,7 @@
             modalBody.innerHTML = contentHTML;
             modal.classList.add('show');
             contextMenu.style.display = 'none'; // hide context menu when opening a modal
+            widgetContextMenu.style.display = 'none';
         }
 
         closeModalBtn.addEventListener('click', () => {
@@ -550,44 +745,111 @@
         });
 
         // Context Menu Button Actions
-        document.getElementById('hideAppsBtn').addEventListener('click', () => {
-            let selectedCount = 0;
-            const allSelectedApps = document.querySelectorAll('.app-icon.selected');
-            allSelectedApps.forEach(app => {
-                app.style.display = 'none';
-                app.classList.remove('selected');
-                app.classList.add('hidden-app');
-                selectedCount++;
-            });
-            openModal('Apps Hidden', `<p>${selectedCount} app(s) have been hidden from the home screen.</p>`);
-        });
-
-        document.getElementById('viewHiddenAppsBtn').addEventListener('click', () => {
-            const hiddenApps = document.querySelectorAll('.hidden-app');
-            openModal('Hidden Apps', `<p>You have ${hiddenApps.length} hidden app(s). Click below to restore them all.</p><button id="restoreAppsBtn" style="margin-top: 10px; padding: 10px 15px; border-radius: 8px; border: none; background: rgba(255,255,255,0.2); color: white; cursor: pointer;">Restore All Apps</button>`);
+        document.getElementById('settingsBtn').addEventListener('click', () => {
+            const isPlaceAnywhere = localStorage.getItem('placeAnywhere') === 'true';
             
-            const restoreBtn = document.getElementById('restoreAppsBtn');
-            if (restoreBtn) {
-                restoreBtn.addEventListener('click', () => {
-                    hiddenApps.forEach(app => {
-                        app.style.display = 'flex';
-                        app.classList.remove('hidden-app');
+            const html = `
+                <div style="padding: 10px 0; color: #000;">
+                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                        <input type="checkbox" id="placeAnywhereCheck" ${isPlaceAnywhere ? 'checked' : ''} style="width:18px; height:18px;">
+                        <span style="font-weight:bold;">Place Anywhere</span>
+                    </label>
+                    <p style="margin:5px 0 0 28px; font-size:12px; color:rgba(0,0,0,0.7);">
+                        Allows you to place apps and widgets anywhere on the grid without forcing them to neatly stack to the top left.
+                    </p>
+                </div>
+            `;
+            openModal('Settings', html);
+            
+            setTimeout(() => {
+                document.getElementById('placeAnywhereCheck').addEventListener('change', (e) => {
+                    const isChecked = e.target.checked;
+                    localStorage.setItem('placeAnywhere', isChecked ? 'true' : 'false');
+                    
+                    document.querySelectorAll('.desktop-item').forEach(item => {
+                        const spanCols = item.dataset.spanCols || 1;
+                        const spanRows = item.dataset.spanRows || 1;
+
+                        if (!isChecked) {
+                            // Revert to packing
+                            item.style.gridColumn = `span ${spanCols}`;
+                            item.style.gridRow = `span ${spanRows}`;
+                            localStorage.removeItem('itemPositions');
+                        } else {
+                            // If toggled ON, they remain densely packed until manually dragged, 
+                            // or we can save their current auto-placed positions explicitly.
+                            const style = window.getComputedStyle(item);
+                            const r = style.gridRowStart;
+                            const c = style.gridColumnStart;
+                            if (r !== 'auto' && c !== 'auto') {
+                                item.style.gridColumn = `${c} / span ${spanCols}`;
+                                item.style.gridRow = `${r} / span ${spanRows}`;
+                            }
+                        }
                     });
-                    modal.classList.remove('show');
+                    
+                    if (isChecked) {
+                        saveItemPositions();
+                    }
                 });
-            }
+            }, 50);
         });
 
         document.getElementById('addWidgetsBtn').addEventListener('click', () => {
-            openModal('Add Widgets', `<p>Select a widget from the list below to add it to your screen.</p>
-                <ul style="list-style:none; padding:0; margin-top:20px;">
-                    <li style="padding:10px; margin-bottom:10px; background:rgba(255,255,255,0.2); border-radius:8px; cursor:pointer;">Clock Widget</li>
-                    <li style="padding:10px; margin-bottom:10px; background:rgba(255,255,255,0.2); border-radius:8px; cursor:pointer;">Techtoby Profile</li>
-                </ul>`);
+            let savedWidgets = JSON.parse(localStorage.getItem('installedWidgets')) || [];
+            let listHTML = '<ul style="list-style:none; padding:0; margin-top:20px; display:flex; flex-direction:column; gap:10px;">';
+            
+            window.availableWidgets.forEach(widget => {
+                const isInstalled = savedWidgets.includes(widget.id);
+                listHTML += `
+                    <li style="padding:15px; background:rgba(255,255,255,0.4); border:1px solid rgba(255,255,255,0.6); border-radius:12px; display:flex; justify-content:space-between; align-items:center; transition:transform 0.2s;">
+                        <div style="text-align:left;">
+                            <h4 style="margin:0 0 5px 0; color:#000; font-size:16px;">${widget.name}</h4>
+                            <p style="margin:0; font-size:12px; color:rgba(0,0,0,0.7);">${widget.description}</p>
+                        </div>
+                        <button class="add-specific-widget-btn" data-widget-id="${widget.id}" style="padding: 8px 16px; border-radius: 8px; border:none; background:${isInstalled ? 'rgba(0,0,0,0.1)' : '#3b82f6'}; color:${isInstalled ? '#000' : '#fff'}; font-weight:bold; cursor:${isInstalled ? 'default' : 'pointer'};" ${isInstalled ? 'disabled' : ''}>
+                            ${isInstalled ? 'Added' : 'Add'}
+                        </button>
+                    </li>
+                `;
+            });
+            listHTML += '</ul>';
+
+            openModal('Add Widgets', `<p style="color:#000;">Customize your home screen with additional widgets.</p>${listHTML}`);
+            
+            // Add listeners to buttons inside modal
+            setTimeout(() => {
+                document.querySelectorAll('.add-specific-widget-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const widgetId = e.target.dataset.widgetId;
+                        const widget = window.availableWidgets.find(w => w.id === widgetId);
+                        
+                        if (widget) {
+                            // Update UI
+                            e.target.innerText = 'Added';
+                            e.target.style.background = 'rgba(0,0,0,0.1)';
+                            e.target.style.color = '#000';
+                            e.target.style.cursor = 'default';
+                            e.target.disabled = true;
+                            
+                            // Render to desktop
+                            renderWidgetNode(widget, document.getElementById('desktop'));
+                            
+                            // Save to local storage
+                            let currentSaved = JSON.parse(localStorage.getItem('installedWidgets')) || [];
+                            if (!currentSaved.includes(widgetId)) {
+                                currentSaved.push(widgetId);
+                                localStorage.setItem('installedWidgets', JSON.stringify(currentSaved));
+                            }
+                        }
+                    });
+                });
+            }, 50);
         });
 
         document.getElementById('customizeHomeBtn').addEventListener('click', () => {
             document.body.classList.add('customizing');
+            contextMenu.style.display = 'none';
         });
 
         document.getElementById('doneCustomizeBtn').addEventListener('click', () => {
@@ -606,6 +868,27 @@
 
         // Drag and Drop Logic for Reorganizing
         let draggedItem = null;
+
+        function saveItemPositions() {
+            if (localStorage.getItem('placeAnywhere') !== 'true') return;
+            const positions = {};
+            document.querySelectorAll('.desktop-item').forEach(item => {
+                const id = item.dataset.widgetId || item.dataset.appId;
+                if (!id) return;
+                
+                // Get style strings that we explicitly set
+                const rowStart = item.style.gridRow.split(' / ')[0];
+                const colStart = item.style.gridColumn.split(' / ')[0];
+                
+                if (rowStart && colStart && !rowStart.includes('span') && !colStart.includes('span')) {
+                    positions[id] = {
+                        row: parseInt(rowStart),
+                        col: parseInt(colStart)
+                    };
+                }
+            });
+            localStorage.setItem('itemPositions', JSON.stringify(positions));
+        }
 
         desktop.addEventListener('dragstart', (e) => {
             if (!document.body.classList.contains('customizing')) {
@@ -633,16 +916,61 @@
         desktop.addEventListener('drop', (e) => {
             e.preventDefault();
             if (!draggedItem) return;
-            const targetItem = e.target.closest('.desktop-item');
-            if (targetItem && targetItem !== draggedItem) {
-                const allItems = Array.from(desktop.querySelectorAll('.desktop-item'));
-                const draggedIndex = allItems.indexOf(draggedItem);
-                const targetIndex = allItems.indexOf(targetItem);
 
-                if (draggedIndex < targetIndex) {
-                    targetItem.parentNode.insertBefore(draggedItem, targetItem.nextSibling);
-                } else {
-                    targetItem.parentNode.insertBefore(draggedItem, targetItem);
+            if (localStorage.getItem('placeAnywhere') === 'true') {
+                // Calculate grid position based on drop coordinates
+                const desktopRect = desktop.getBoundingClientRect();
+                const style = window.getComputedStyle(desktop);
+                
+                const gapX = parseFloat(style.columnGap || style.gridColumnGap || '24');
+                const gapY = parseFloat(style.rowGap || style.gridRowGap || '24');
+                const paddingLeft = parseFloat(style.paddingLeft || '32');
+                const paddingTop = parseFloat(style.paddingTop || '32');
+                
+                // Get defined columns, parsing their computed widths
+                const cols = style.gridTemplateColumns.match(/[\d.]+px/g)?.map(parseFloat) || [];
+                // Calculate row height manually or from style
+                const rowHeightStr = style.gridAutoRows || '150px';
+                const rowHeightMatch = rowHeightStr.match(/[\d.]+/);
+                const rowHeight = rowHeightMatch ? parseFloat(rowHeightMatch[0]) : 150;
+
+                const relX = e.clientX - desktopRect.left - paddingLeft;
+                const relY = e.clientY - desktopRect.top - paddingTop;
+
+                let col = 1;
+                let currX = 0;
+                for (let i = 0; i < cols.length; i++) {
+                    if (relX >= currX && relX < currX + cols[i] + gapX) {
+                        break;
+                    }
+                    currX += cols[i] + gapX;
+                    col++;
+                }
+
+                let row = 1;
+                let currY = 0;
+                // Since row heights are mostly consistent 150px
+                row = Math.floor(relY / (rowHeight + gapY)) + 1;
+
+                const spanCols = draggedItem.dataset.spanCols || 1;
+                const spanRows = draggedItem.dataset.spanRows || 1;
+
+                draggedItem.style.gridColumn = `${Math.max(1, col)} / span ${spanCols}`;
+                draggedItem.style.gridRow = `${Math.max(1, row)} / span ${spanRows}`;
+                
+                saveItemPositions();
+            } else {
+                const targetItem = e.target.closest('.desktop-item');
+                if (targetItem && targetItem !== draggedItem) {
+                    const allItems = Array.from(desktop.querySelectorAll('.desktop-item'));
+                    const draggedIndex = allItems.indexOf(draggedItem);
+                    const targetIndex = allItems.indexOf(targetItem);
+
+                    if (draggedIndex < targetIndex) {
+                        targetItem.parentNode.insertBefore(draggedItem, targetItem.nextSibling);
+                    } else {
+                        targetItem.parentNode.insertBefore(draggedItem, targetItem);
+                    }
                 }
             }
             draggedItem.style.opacity = '1';

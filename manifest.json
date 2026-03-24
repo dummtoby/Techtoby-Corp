@@ -11,15 +11,15 @@
             "version": "1.0",
             "description": "Design nice computer desktop decals for your Bloxburg builds!",
             "author": "dummtoby",
-            "path": "bbcomputer/index.html",
-            "icon": ""
+            "path": "bbcomputer/",
+            "icon": "media/100003.png"
         },
         {
             "name": "bbfamtree",
             "version": "1.0",
             "description": "Design a family tree for your Bloxburg builds!",
             "author": "dummtoby",
-            "path": "bbfamtree/index.html",
+            "path": "bbfamtree/",
             "icon": "https://cdn.shawnyxx.dev/assets/655910.png"
         },
         {
@@ -27,7 +27,7 @@
             "version": "1.0",
             "description": "Design a mural for your Bloxburg builds!",
             "author": "dummtoby",
-            "path": "bbmural/index.html",
+            "path": "bbmural/",
             "icon": "https://cdn.shawnyxx.dev/icons/158450.png"
         }
     ]

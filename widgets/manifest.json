@@ -1,5 +1,6 @@
 [
     {
+        "id": "techtoby_profile",
         "name": "Techtoby",
         "type": "default",
         "app": "os",
@@ -9,9 +10,12 @@
             { "rows": 3, "columns": 3 }
         ],
         "defaultSize": { "rows": 1, "columns": 2 },
-        "path": "widgets/techtoby/default.html"
+        "path": "widgets/techtoby/default.html",
+        "preinstalled": true,
+        "description": "Your main Techtoby profile badge."
     },
     {
+        "id": "clock_widget",
         "name": "Clock",
         "type": "default",
         "app": "os",
@@ -20,6 +24,34 @@
             { "rows": 2, "columns": 2 }
         ],
         "defaultSize": { "rows": 1, "columns": 2 },
-        "path": "widgets/clock/default.html"
+        "path": "widgets/clock/default.html",
+        "preinstalled": true,
+        "description": "A stylish digital clock."
+    },
+    {
+        "id": "bloxburg_tips",
+        "name": "Bloxburg Tips",
+        "type": "default",
+        "app": "os",
+        "sizes": [
+            { "rows": 2, "columns": 2 }
+        ],
+        "defaultSize": { "rows": 2, "columns": 2 },
+        "path": "widgets/bloxburg_tips/default.html",
+        "preinstalled": false,
+        "description": "Daily Welcome to Bloxburg tips & tricks."
+    },
+    {
+        "id": "youtube_stats",
+        "name": "YT Stats",
+        "type": "default",
+        "app": "os",
+        "sizes": [
+            { "rows": 1, "columns": 2 }
+        ],
+        "defaultSize": { "rows": 1, "columns": 2 },
+        "path": "widgets/youtube_stats/default.html",
+        "preinstalled": false,
+        "description": "Live subscriber goals and content stats."
     }
 ]
