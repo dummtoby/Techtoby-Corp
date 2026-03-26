@@ -20,15 +20,17 @@
             align-items: center;
             justify-content: center;
             
-            background: linear-gradient(135deg, rgba(253, 230, 138, 0.6), rgba(254, 243, 199, 0.3));
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            border-radius: 18px;
+            /* Liquid glass style */
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 15px;
             box-sizing: border-box;
-            backdrop-filter: blur(25px) saturate(1.5);
-            -webkit-backdrop-filter: blur(25px) saturate(1.5);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(255,255,255,0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.6);
             
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #000;
             overflow: hidden;
             flex-direction: column;
             text-align: center;
@@ -56,18 +58,18 @@
             margin: 0;
             font-size: 13px;
             font-weight: 700;
-            color: #b45309; /* Warm amber/brown */
+            color: #000;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .tip-content {
             font-size: 15px;
-            color: #451a03;
+            color: rgba(0, 0, 0, 0.8);
             font-weight: 600;
             line-height: 1.4;
             max-width: 95%;
-            text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+            text-shadow: none;
         }
     </style>
 </head>

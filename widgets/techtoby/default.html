@@ -18,21 +18,17 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            color: #111;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             
-            /* Animated gradient background */
-            background: linear-gradient(-45deg, rgba(238,119,82,0.3), rgba(231,60,126,0.3), rgba(35,166,213,0.3), rgba(35,213,171,0.3));
-            background-size: 300% 300%;
-            animation: gradientMove 12s ease infinite;
-
-            /* Glass effect */
-            backdrop-filter: blur(25px) saturate(1.8);
-            -webkit-backdrop-filter: blur(25px) saturate(1.8);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.7);
+            /* Liquid glass style */
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.6);
             
-            border-radius: 18px; /* Matches widget wrapper */
             overflow: hidden;
             box-sizing: border-box;
         }
@@ -44,7 +40,7 @@
             padding: 1.25rem;
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.45); /* Inner white tint */
+            background: transparent;
         }
 
         .profile-pic {
@@ -85,8 +81,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            color: #1a1a1a;
-            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+            color: #000;
         }
 
         .subtitle {
@@ -95,7 +90,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            color: #555;
+            color: rgba(0, 0, 0, 0.7);
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-top: 2px;
